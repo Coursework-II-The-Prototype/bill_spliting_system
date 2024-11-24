@@ -10,6 +10,7 @@ python = "^3.11"
 black = "^24.10.0"
 flake8 = "^7.1.1"
 tinydb = "^4.8.2"
+pytest = "^8.3.3"
 
 [build-system]
 requires = ["poetry-core"]
