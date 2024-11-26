@@ -33,7 +33,10 @@ items = [
     {'item_id': 17, 'name': 'body wash', 'price': 3.28},
     {'item_id': 18, 'name': 'Bread', 'price': 1.00},
     {'item_id': 19, 'name': 'Eggs', 'price': 4.50},
-    {'item_id': 20, 'name': 'Laundry detergent', 'price': 15.00}
+    {'item_id': 20, 'name': 'Laundry detergent', 'price': 15.00},
+    {'item_id': 21, 'name': 'salt', 'price': 6.39},
+    {'item_id': 22, 'name': 'olive oil', 'price': 12.98}
+
 ]
 
 # Insert items only if they don't already exist

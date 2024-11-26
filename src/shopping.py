@@ -13,7 +13,7 @@ def show_supermarket():
     items = supermarket.all()
 
     table = [[item['item_id'], item['name'], item['price']] for item in items]
-    headers = ["Item ID", "Name", "Price"]
+    headers = ["Item ID", "Name", "Price £"]
 
     print("\nAvailable products: ")
     print(tabulate(table, headers=headers, tablefmt="grid"))
