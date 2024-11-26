@@ -1,0 +1,1 @@
+{"_default": {"1": {"household_id": "house1", "user_ids": ["user1", "user2", "user3", "user4"]}, "2": {"household_id": "house2", "user_ids": ["user5", "user6", "user7", "user8"]}, "3": {"household_id": "house1", "user_ids": ["user1", "user2", "user3", "user4"]}, "4": {"household_id": "house2", "user_ids": ["user5", "user6", "user7", "user8"]}}}
