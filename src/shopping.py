@@ -42,6 +42,20 @@ def chose_item():
     return item_id, item_name, item_price, amount, isPublic
 
 
+def reset_ready(order_id):
+    order = order_db.get(Item.order_id == order_id)
+
+    users = order.get("users", [])
+
+    for user in users:
+        user["isReady"] = False
+
+    order_db.update(
+        {"users": users, "isReset": True}, Item.order_id == order_id)
+
+    return "isReady and isReset have been updated"
+
+
 def insert(user_id, order_id):
     order = order_db.get(Item.order_id == order_id)
 
@@ -62,6 +76,8 @@ def insert(user_id, order_id):
     items.append(new_item)
 
     order_db.update({"items": items}, Item.order_id == order_id)
+    reset_ready(order_id)
+
     return "Item added to order"
 
 
@@ -97,5 +113,6 @@ def update(user_id, order_id):
     user_input_item["isPublic"] = isPublic
 
     order_db.update({"items": items}, Item.order_id == order_id)
+    reset_ready(order_id)
     return f"Item {item_id_input} has been updated! "
 
