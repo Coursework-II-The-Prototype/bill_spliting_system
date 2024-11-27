@@ -3,10 +3,35 @@ from tinydb import TinyDB, Query
 from tabulate import tabulate
 
 current_dir = os.path.dirname(__file__)
-db_path = os.path.join(current_dir, '../databases/supermarket.json')
-
-supermarket = TinyDB(db_path)
+supermarket_db_path = os.path.join(
+    current_dir, '../databases/supermarket.json')
+supermarket = TinyDB(supermarket_db_path)
 Item = Query()
+
+household_db_path = os.path.join(current_dir, '../databases/household.json')
+household_and_user = TinyDB(household_db_path)
+household = Query()
+
+
+def id_check():
+    input1 = input("Enter your house hold id please: ")
+    house_id_input = int(input1)
+    house = household_and_user.get(household.house_id == house_id_input)
+
+    if house:
+        print("House found! ")
+        input2 = input("Enter your student id: ")
+        student_id_input = int(input2)
+        student_ids = house.get("student_id", [])
+
+        if student_id_input in student_ids:
+            print("Student id found! ")
+            return house, student_ids, True
+        else:
+            return 0, 0, False
+    else:
+        print("Cannot found house or student id, check your input")
+        return 0, 0, False
 
 
 def show_supermarket():
