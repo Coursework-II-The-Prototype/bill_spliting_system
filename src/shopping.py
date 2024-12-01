@@ -10,6 +10,7 @@ order_db_path = os.path.join(current_dir, '../databases/order.json')
 supermarket = TinyDB(supermarket_db_path)
 order_db = TinyDB(order_db_path)
 Item = Query()
+Product = Query()
 
 
 def show_supermarket():
@@ -116,3 +117,48 @@ def update(user_id, order_id):
     reset_ready(order_id)
     return f"Item {item_id_input} has been updated! "
 
+
+def setReady(user_id, order_id):
+    user_input = input("Are you ready for placing this order? (yes/no)")
+    order = order_db.get(Item.order_id == order_id)
+    users = order.get("users", [])
+
+    for user in users:
+        if user["user_id"] == user_id and user_input == "yes":
+            user["isReady"] = True
+            break
+
+    order_db.update({"users": users}, Item.order_id == order_id)
+
+
+def print_all(user_id, order_id):
+    order = order_db.get(Item.order_id == order_id)
+    if not order:
+        return "No exsisting order found. Please create an order first!"
+
+    items = order.get("items", [])
+    if not items:
+        return "no item in order list!"
+
+    public_items = [item for item in items if item["isPublic"]]
+    personal_items = [item for item in items if not item["isPublic"]
+                      and item["user_id"] == user_id]
+
+    public_table = [
+        [(supermarket.get(Product.item_id == item["item_id"])["name"]),
+         item["price"], item["quantity"], item["user_id"]]
+        for item in public_items]
+    personal_table = [[
+        (supermarket.get(Product.item_id == item["item_id"])["name"]),
+        item["price"], item["quantity"]]
+        for item in personal_items]
+
+    headers = ["Items", "Price", "Amount"]
+    headers_public = ["Items", "Price", "Amount", "Addor's ID"]
+
+    print("\nPublic Items: ")
+    print(tabulate(public_table, headers_public, tablefmt="grid"))
+    print("\nPersonal Items: ")
+    print(tabulate(personal_table, headers, tablefmt="grid"))
+
+    return "Order info is above"
