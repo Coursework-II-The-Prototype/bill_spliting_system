@@ -1,0 +1,1 @@
+{"_default": {"1": {"order_id": 1, "users": [{"user_id": 1, "isReady": false}, {"user_id": 2, "isReady": false}], "items": [{"item_id": 1, "quantity": 10, "user_id": 1, "isPublic": false}, {"item_id": 2, "quantity": 1, "user_id": 2, "isPublic": true}], "isReset": false}}}
