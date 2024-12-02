@@ -22,5 +22,6 @@ format = 'scripts:format'
 lint = 'scripts:lint'
 
 [tool.black]
-line-length = 88
+line-length = 79
+include = 'src/.*|tests/.*'
 quiet = true
