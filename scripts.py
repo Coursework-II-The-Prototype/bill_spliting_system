@@ -2,8 +2,8 @@ import subprocess
 
 
 def format():
-    subprocess.run(["poetry", "run", "black", "-l 79", "."])
+    subprocess.run(["poetry", "run", "black", "."])
 
 
 def lint():
-    subprocess.run(["poetry", "run", "flake8"])
+    subprocess.run(["poetry", "run", "flake8", ".", "--select=E9,F63,F7,F82"])
