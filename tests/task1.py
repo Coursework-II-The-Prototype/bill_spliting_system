@@ -1,19 +1,16 @@
-import os
 import random
-from tests.utils import check_fields, type_check
+from tests.utils import get_db, check_fields, type_check
 
-from tinydb import TinyDB, Query
+from tinydb import Query
 from src.task1 import create_new_order
 
 QUERY = Query()
 
 
-path = os.path.join(os.path.dirname(__file__), "../databases/household.json")
-household_db = TinyDB(path)
+household_db = get_db("household")
 all_households = household_db.all()
 
-path = os.path.join(os.path.dirname(__file__), "../databases/order.json")
-order_db = TinyDB(path)
+order_db = get_db("order")
 
 
 def test_household_db():
