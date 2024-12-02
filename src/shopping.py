@@ -162,3 +162,10 @@ def print_all(user_id, order_id):
     print(tabulate(personal_table, headers, tablefmt="grid"))
 
     return "Order info is above"
+
+
+def create_new_order_status(isCreated, order_id):
+    if isCreated:
+        return "New order has been created"
+    else:
+        return f"{order_id} is existed, please work on this order"
