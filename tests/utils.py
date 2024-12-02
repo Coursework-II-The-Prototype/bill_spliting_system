@@ -16,10 +16,11 @@ def check_fields(items, keys, msg):
         ), f"expect fields of {_keys} but get {__keys} in {msg}"
 
 
-def type_check(var, _type, msg):
+def type_check(var, _type, name):
+    msg = f"expect {name} to be type {_type} but get {type(var)}"
     if isinstance(_type, list):
         assert isinstance(var, list) and all(
-            isinstance(el, str) for el in var
+            isinstance(el, _type[0]) for el in var
         ), msg
     else:
-        assert isinstance(var, str), msg
+        assert isinstance(var, _type), msg
