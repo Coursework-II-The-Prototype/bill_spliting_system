@@ -1,5 +1,7 @@
 import os
 import random
+from tests.utils import check_fields, type_check
+
 from tinydb import TinyDB, Query
 from src.task1 import create_new_order
 
@@ -12,24 +14,6 @@ all_households = household_db.all()
 
 path = os.path.join(os.path.dirname(__file__), "../databases/order.json")
 order_db = TinyDB(path)
-
-
-def check_fields(items, keys, msg):
-    for obj in items:
-        _keys = set(keys)
-        __keys = set(obj.keys())
-        assert (
-            _keys == __keys
-        ), f"expect fields of {_keys} but get {__keys} in {msg}"
-
-
-def type_check(var, _type, msg):
-    if isinstance(_type, list):
-        assert isinstance(var, list) and all(
-            isinstance(el, str) for el in var
-        ), msg
-    else:
-        assert isinstance(var, str), msg
 
 
 def test_household_db():
