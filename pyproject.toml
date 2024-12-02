@@ -19,3 +19,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry.scripts]
 format = 'scripts:format'
 lint = 'scripts:lint'
+
+[tool.black]
+line-length = 88
+quiet = true
