@@ -1,7 +1,9 @@
 import os
 from tinydb import TinyDB, Query
 
-db_path = os.path.join(os.path.dirname(__file__), "..", "databases", "household.json")
+db_path = os.path.join(
+    os.path.dirname(__file__), "..", "databases", "household.json"
+)
 
 db = TinyDB(db_path)
 
@@ -11,15 +13,17 @@ order_path = os.path.join(current_dir, "../databases/order.json")
 order = TinyDB(order_path)
 order_list = Query()
 
-order.insert({"type": "order", "user_id": 111, "item_id": 1, "amount": 1})
-order.insert({"type": "order", "user_id": 222, "item_id": 2, "amount": 2})
-
 
 def add_order(order_id, users, items):
     if not users or not items:
         return False
     order.insert(
-        {"order_id": order_id, "users": users, "items": items, "isReset": False}
+        {
+            "order_id": order_id,
+            "users": users,
+            "items": items,
+            "isReset": False,
+        }
     )
     return True
 
@@ -43,12 +47,16 @@ def is_user_active(user_id):
     return len(active_orders) > 0
 
 
-household_db = TinyDB("../databases/household.json")
+household_db = TinyDB(
+    os.path.join(os.path.dirname(__file__), "../databases/household.json")
+)
 household_query = Query()
 
 
 def create_new_order(user_id):
-    if order.search((order_list.users.any(user_id)) & (order_list.isReset == False)):
+    if order.search(
+        (order_list.users.any(user_id)) & (order_list.isReset == False)
+    ):
         return False
 
     user_household = household_db.search(household_query.user_id == user_id)
@@ -57,12 +65,15 @@ def create_new_order(user_id):
 
     household_id = user_household[0]["household_id"]
 
-    household_users = household_db.search(household_query.household_id == household_id)
+    household_users = household_db.search(
+        household_query.household_id == household_id
+    )
     user_ids = [user["user_id"] for user in household_users]
 
     new_order = {
         "type": "order",
-        "order_id": max(order.all(), key=lambda x: x["order_id"])["order_id"] + 1,
+        "order_id": max(order.all(), key=lambda x: x["order_id"])["order_id"]
+        + 1,
         "users": user_ids,
         "items": [{"item": "item_id", "quantity": 1}],
         "isReset": False,
