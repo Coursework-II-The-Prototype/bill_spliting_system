@@ -1,3 +1,12 @@
+import os
+from tinydb import TinyDB
+
+
+def get_db(name):
+    path = os.path.join(os.path.dirname(__file__), f"../databases/{name}.json")
+    return TinyDB(path)
+
+
 def check_fields(items, keys, msg):
     for obj in items:
         _keys = set(keys)
