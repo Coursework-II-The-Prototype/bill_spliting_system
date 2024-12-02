@@ -21,12 +21,12 @@ def test_household_db():
         type_check(
             obj["household_id"],
             str,
-            "field `household_id` should be in type string",
+            "`household_id`",
         )
         type_check(
             obj["user_ids"],
             [str],
-            "field `user_ids` should be an array of strings",
+            "`user_ids`",
         )
 
 
@@ -44,7 +44,7 @@ def test_create_new_order():
     )
     for obj in all_orders:
         type_check(
-            obj["users"], [str], "field `users` should be an array of strings"
+            obj["users"], [str], "`users`"
         )
 
     assert set(all_orders[0]["users"]) == set(
