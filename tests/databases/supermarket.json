@@ -1,0 +1,24 @@
+{
+    "_default": {
+        "1": {
+            "item_id": "1",
+            "name": "a",
+            "price": 4
+        },
+        "2": {
+            "item_id": "2",
+            "name": "b",
+            "price": 5.5
+        },
+        "3": {
+            "item_id": "3",
+            "name": "c",
+            "price": 3
+        },
+        "4": {
+            "item_id": "4",
+            "name": "d",
+            "price": 1.5
+        }
+    }
+}
