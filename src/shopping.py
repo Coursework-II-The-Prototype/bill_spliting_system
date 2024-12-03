@@ -89,7 +89,7 @@ def update(user_id, order_id):
     if not order:
         return "Order not found, check input"
 
-    item_id_input = int(input("Enter the item id you want to modify"))
+    item_id_input = input("Enter the item id you want to modify")
 
     items = order.get("items", [])
     user_input_item = None

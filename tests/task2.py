@@ -6,7 +6,7 @@ from tinydb import Query
 QUERY = Query()
 
 current_dir = os.path.dirname(__file__)
-mock_dir = f"{current_dir}/mock"
+mock_dir = f"{current_dir}/databases"
 
 
 @pytest.fixture
