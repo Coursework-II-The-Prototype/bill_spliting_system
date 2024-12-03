@@ -59,7 +59,7 @@ def create_new_order(user_id):
     ):
         return False
 
-    user_household = household_db.search(household_query.user_id == user_id)
+    user_household = household_db.search(household_query.user_ids.any(user_id))
     if not user_household:
         return False
 
@@ -68,14 +68,15 @@ def create_new_order(user_id):
     household_users = household_db.search(
         household_query.household_id == household_id
     )
-    user_ids = [user["user_id"] for user in household_users]
+    user_ids = [uid for user in household_users for uid in user["user_ids"]]
 
     new_order = {
-        "type": "order",
-        "order_id": max(order.all(), key=lambda x: x["order_id"])["order_id"]
-        + 1,
+        # "type": "order",
+        # "order_id": max(order.all(), key=lambda x: x["order_id"])["order_id"]
+        # + 1,
+        "order_id": "a",
         "users": user_ids,
-        "items": [{"item": "item_id", "quantity": 1}],
+        "items": [],
         "isReset": False,
     }
     order.insert(new_order)
