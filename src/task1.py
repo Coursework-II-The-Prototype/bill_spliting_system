@@ -74,7 +74,7 @@ def create_new_order(user_id):
         # "type": "order",
         # "order_id": max(order.all(), key=lambda x: x["order_id"])["order_id"]
         # + 1,
-        "order_id": "a",
+        "order_id": household_id + "ODB",
         "users": user_ids,
         "items": [],
         "isReset": False,
