@@ -87,7 +87,8 @@ def update(user_id, order_id):
     order = get_order(order_id)
 
     if not order:
-        return "Order not found, check input"
+        return False
+        # return "Order not found, check input"
 
     item_id_input = input("Enter the item id you want to modify")
 
@@ -100,7 +101,8 @@ def update(user_id, order_id):
             break
 
     if not user_input_item:
-        return "No such item, please add the item with correct command"
+        return False
+        # return "No such item, please add the item with correct command"
 
     print("Please enter following info of the item: ")
     quantity = int(input("How many of this item you want now: "))
@@ -116,16 +118,21 @@ def update(user_id, order_id):
 
     order_db.update({"items": items}, Item.order_id == order_id)
     reset_ready(order_id)
-    return f"Item {item_id_input} has been updated! "
+
+    return True
+    # return f"Item {item_id_input} has been updated! "
 
 
 def setReady(user_id, order_id):
     user_input = input("Are you ready for placing this order? (yes/no)")
+    if user_input != "yes":
+        return
+
     order = get_order(order_id)
     users = order.get("users", [])
 
     for user in users:
-        if user["user_id"] == user_id and user_input == "yes":
+        if user["user_id"] == user_id:
             user["isReady"] = True
             break
 
