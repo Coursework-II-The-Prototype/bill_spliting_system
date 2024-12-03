@@ -21,6 +21,7 @@ def show_supermarket():
 
     print("\nAvailable products: ")
     print(tabulate(table, headers=headers, tablefmt="grid"))
+    return table
 
 
 def chose_item():
@@ -161,7 +162,7 @@ def print_all(user_id, order_id):
     print("\nPersonal Items: ")
     print(tabulate(personal_table, headers, tablefmt="grid"))
 
-    return "Order info is above"
+    return public_table, personal_table, headers, headers_public
 
 
 def create_new_order_status(isCreated, order_id):
@@ -169,3 +170,4 @@ def create_new_order_status(isCreated, order_id):
         return "New order has been created"
     else:
         return f"{order_id} is existed, please work on this order"
+
