@@ -27,4 +27,4 @@ jobs:
     - name: Lint with flake8
       run: poetry run lint
     - name: Test with pytest
-      run: poetry run pytest tests/
+      run: poetry run pytest tests/*
