@@ -11,7 +11,6 @@ order_db_path = os.path.join(current_dir, "../databases/order.json")
 supermarket = TinyDB(supermarket_db_path)
 order_db = TinyDB(order_db_path)
 Item = Query()
-Product = Query()
 
 
 def show_supermarket():
@@ -139,7 +138,7 @@ def setReady(user_id, order_id):
 
 
 def get_item_detail(id, keys):
-    item = supermarket.get(Product.item_id == id)
+    item = supermarket.get(Item.item_id == id)
     ls = []
     for k in keys:
         ls.append(item[k])
@@ -192,11 +191,3 @@ def print_table(user_id, order_id):
     )
 
     return True
-    # return public_table, personal_table, headers, headers_public
-
-
-def create_new_order_status(isCreated, order_id):
-    if isCreated:
-        return "New order has been created"
-    else:
-        return f"{order_id} is existed, please work on this order"
