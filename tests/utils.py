@@ -24,4 +24,3 @@ def type_check(var, _type, name):
         ), msg
     else:
         assert isinstance(var, _type), msg
-
