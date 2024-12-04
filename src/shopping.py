@@ -63,6 +63,7 @@ def insert(user_id, order_id):
     user_input_isPublic = input("\nIs this a public item?(yes/no): ")
     if user_input_isPublic == "yes":
         isPublic = True
+        reset_ready(order_id)
     else:
         isPublic = False
 
@@ -77,8 +78,6 @@ def insert(user_id, order_id):
     items.append(new_item)
 
     order_db.update({"items": items}, Item.order_id == order_id)
-    reset_ready(order_id)
-
     return True
     # return "Item added to order"
 
@@ -110,6 +109,7 @@ def update(user_id, order_id):
 
     if input1 == "yes":
         isPublic = True
+        reset_ready(order_id)
     else:
         isPublic = False
 
@@ -117,7 +117,6 @@ def update(user_id, order_id):
     user_input_item["isPublic"] = isPublic
 
     order_db.update({"items": items}, Item.order_id == order_id)
-    reset_ready(order_id)
 
     return True
     # return f"Item {item_id_input} has been updated! "
