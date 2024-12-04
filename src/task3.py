@@ -2,71 +2,67 @@ from tinydb import TinyDB, Query
 import os
 
 
-dbs = {
-    '_default': TinyDB('orders.json'),
-    'preparation': TinyDB('preparation.json')
-}
-
+QUERY = Query()
 
 current_dir = os.path.dirname(__file__)
-order_db_path = os.path.join(current_dir, '../databases/order.json')
+order_path = os.path.join(current_dir, "../databases/order.json")
+preparation_path = os.path.join(current_dir, "../databases/preparation.json")
+supermarket_path = os.path.join(current_dir, "../databases/supermarket.json")
 
-order_db = TinyDB(order_db_path)
-User = Query()
+order_db = TinyDB(order_path)
+preparation_db = TinyDB(preparation_path)
+supermarket_db = TinyDB(supermarket_path)
 
-student_balance = 100
-delivery_fee = 10
-
-
-def insert(database, order):
-    database.insert(order)
-
-
-def move_orders_to_preparation():
-    order_db = dbs['_default']
-    preparation_db = dbs['preparation']
-    all_orders = order_db.all()
-
-    for order in all_orders:
-        users = order['users']
-        if all(user['isReady'] for user in users):
-            order.pop('isReset', None)
-            for user in users:
-                user.pop('isReady', None)
-
-            insert(preparation_db, order)
+BALANCE = 100
+DELIVERY_FEE = 10
 
 
-# Process orders
-for order in order_db.all():
-    users = order.get('users', [])
-    
-    # Check if all users are readyß
-    if all(user.get('isReady', False) for user in users):
-        # 如果所有用户都 isReady，重置 isReset 状态为 False
-        order_db.update({'isReset': False}, User.id == order.get('id'))
+def move_orders(orders):
+    for order in orders:
+        order.pop("isReset", None)
+        order.pop("users", None)
+        preparation_db.insert(order)
+        order_db.remove(QUERY.order_id == order["order_id"])
 
 
-def number_of_students(order_db):
-    total_users = 0
+def get_price(item_id):
+    return supermarket_db.get(QUERY.item_id == item_id)["price"]
+
+
+def calc_cost(items, user_id, total_students):
+    personal_items_cost = sum(
+        get_price(item["item_id"]) * item["quantity"]
+        for item in items
+        if item["user_id"] == user_id and not item["isPublic"]
+    )
+
+    public_items_cost = sum(
+        get_price(item["item_id"]) * item["quantity"]
+        for item in items
+        if item["isPublic"]
+    )
+
+    return (
+        personal_items_cost
+        + (DELIVERY_FEE + public_items_cost) / total_students
+    )
+
+
+def daily_job():
+    ready = []
+
     for order in order_db.all():
-        users = order.get('users', [])
-        total_users += len(users)
-    return total_users
+        if all(user["isReady"] for user in order["users"]):
+            total = len(order["users"])
+            flag = True
+            for user in order["users"]:
+                if calc_cost(order["items"], user["user_id"], total) > BALANCE:
+                    flag = False
+                    break
+            if flag:
+                ready.append(order)
 
+    move_orders(ready)
 
-def calculate_total_cost(items, user_id, delivery_fee, total_students):
-    # Calculate personal items cost for the given user
-    personal_items_cost = sum(item['price'] * item['quantity'] 
-                              for item in items if item['user_id'] == user_id 
-                              and not item['isPublic'])
-    
-    # Calculate public items cost
-    public_items_cost = sum(item['price'] * item['quantity'] 
-                            for item in items if item['isPublic'])
-    
-    # Calculate total cost
-    total_cost = personal_items_cost 
-    + (delivery_fee + public_items_cost) / total_students
-
-    return total_cost
+    for record in order_db.all():
+        order_db.update({"isReset": False}, doc_ids=[record.doc_id])
