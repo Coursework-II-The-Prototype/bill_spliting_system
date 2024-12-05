@@ -4,3 +4,4 @@
 .DS_Store
 tests/databases/*
 !tests/databases/supermarket.json
+!tests/databases/household.json

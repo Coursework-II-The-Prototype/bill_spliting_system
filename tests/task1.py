@@ -1,19 +1,36 @@
+import os
 import random
-from tests.utils import get_db, check_fields, type_check
+import pytest
+from tests.utils import check_fields, type_check
 
-from tinydb import Query
-from src.task1 import create_new_order
+from tinydb import TinyDB, Query
 
 QUERY = Query()
 
+all_households = TinyDB("databases/household.json").all()
 
-household_db = get_db("household")
-all_households = household_db.all()
+current_dir = os.path.dirname(__file__)
+mock_dir = f"{current_dir}/databases"
 
-order_db = get_db("order")
+
+@pytest.fixture
+def mock_db(monkeypatch):
+    monkeypatch.setattr(os.path, "dirname", lambda _: mock_dir)
+    from utils import get_db
+    from src.task1 import create_new_order
+
+    order_db = get_db("order")
+    order_db.truncate()
+
+    return {
+        "order_db": order_db,
+        "create_new_order": create_new_order,
+    }
 
 
 def test_household_db():
+    assert isinstance(all_households, list)
+    assert len(all_households) > 0
     check_fields(
         all_households, ["user_ids", "household_id"], "household database"
     )
@@ -30,8 +47,10 @@ def test_household_db():
         )
 
 
-def test_create_new_order():
-    order_db.truncate()
+def test_create_new_order(mock_db):
+    order_db = mock_db["order_db"]
+    create_new_order = mock_db["create_new_order"]
+
     users = random.choice(all_households)["user_ids"]
     user = random.choice(users)
 
