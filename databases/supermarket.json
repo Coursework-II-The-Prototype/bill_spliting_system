@@ -2,118 +2,118 @@
     "_default": {
         "1": {
             "item_id": "0",
-            "name": "delievry service",
-            "price": 4.0
+            "name": "fresh strawberries",
+            "price": 5.5
         },
         "2": {
             "item_id": "1",
-            "name": "soap",
-            "price": 5.0
+            "name": "whole grain bread",
+            "price": 2.0
         },
         "3": {
             "item_id": "2",
-            "name": "toilet paper",
-            "price": 3.0
+            "name": "chicken breast",
+            "price": 8.9
         },
         "4": {
             "item_id": "3",
-            "name": "milk",
-            "price": 2.3
+            "name": "organic lettuce",
+            "price": 3.0
         },
         "5": {
             "item_id": "4",
-            "name": "apples",
-            "price": 1.4
+            "name": "cheddar cheese",
+            "price": 4.7
         },
         "6": {
             "item_id": "5",
-            "name": "kitchen roll",
-            "price": 3.2
+            "name": "potatoes",
+            "price": 2.5
         },
         "7": {
             "item_id": "6",
-            "name": "wash up liquid",
-            "price": 4.8
+            "name": "tomatoes",
+            "price": 3.8
         },
         "8": {
             "item_id": "7",
-            "name": "all purpose cloths",
-            "price": 6.3
+            "name": "carrots",
+            "price": 1.3
         },
         "9": {
             "item_id": "8",
-            "name": "napkin paper",
-            "price": 10.45
+            "name": "cucumber",
+            "price": 1.0
         },
         "10": {
             "item_id": "9",
-            "name": "paper towel",
-            "price": 6.6
+            "name": "butter",
+            "price": 2.9
         },
         "11": {
             "item_id": "10",
-            "name": "toilet cleaning",
-            "price": 2.4
+            "name": "yogurt",
+            "price": 1.5
         },
         "12": {
             "item_id": "11",
-            "name": "tooth brush",
-            "price": 1.1
+            "name": "orange juice",
+            "price": 3.6
         },
         "13": {
             "item_id": "12",
-            "name": "crisps",
-            "price": 1.66
+            "name": "spaghetti",
+            "price": 1.8
         },
         "14": {
             "item_id": "13",
-            "name": "cleaning spray",
-            "price": 2.99
+            "name": "pasta sauce",
+            "price": 2.2
         },
         "15": {
             "item_id": "14",
-            "name": "flower",
-            "price": 14.69
+            "name": "chocolate bar",
+            "price": 1.2
         },
         "16": {
             "item_id": "15",
-            "name": "cutting board",
-            "price": 14.6
+            "name": "canned tuna",
+            "price": 2.5
         },
         "17": {
             "item_id": "16",
-            "name": "shampoo",
-            "price": 2.2
+            "name": "baking soda",
+            "price": 0.99
         },
         "18": {
             "item_id": "17",
-            "name": "body wash",
-            "price": 3.28
+            "name": "sugar",
+            "price": 1.7
         },
         "19": {
             "item_id": "18",
-            "name": "Bread",
-            "price": 1.0
+            "name": "flour",
+            "price": 1.3
         },
         "20": {
             "item_id": "19",
-            "name": "Eggs",
-            "price": 4.5
+            "name": "almond milk",
+            "price": 3.4
         },
         "21": {
             "item_id": "20",
-            "name": "Laundry detergent",
-            "price": 15.0
+            "name": "tofu",
+            "price": 2.8
         },
         "22": {
             "item_id": "21",
-            "name": "salt",
-            "price": 6.39
+            "name": "coconut oil",
+            "price": 8.5
         },
         "23": {
             "item_id": "22",
-            "name": "olive oil",
-            "price": 12.98
+            "name": "granola",
+            "price": 4.2
         }
     }
 }
