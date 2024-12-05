@@ -10,7 +10,7 @@ order_db_path = os.path.join(current_dir, "../databases/order.json")
 
 supermarket = TinyDB(supermarket_db_path)
 order_db = TinyDB(order_db_path)
-Item = Query()
+QUERY = Query()
 
 
 def show_supermarket():
@@ -21,7 +21,10 @@ def show_supermarket():
 
 
 def get_order(id):
-    return order_db.get(Item.order_id == id)
+    o = order_db.get(QUERY.order_id == id)
+    if not o:
+        print("Unexpected error")
+    return o
 
 
 def reset_ready(order_id):
@@ -36,7 +39,7 @@ def reset_ready(order_id):
         user["isReady"] = False
 
     order_db.update(
-        {"users": users, "isReset": True}, Item.order_id == order_id
+        {"users": users, "isReset": True}, QUERY.order_id == order_id
     )
 
     return True
@@ -47,19 +50,19 @@ def insert(user_id, order_id):
     order = get_order(order_id)
 
     if not order:
+        print("Unexpected error")
         return False
-        # return "Order not found, check input"
 
     headers = ["Item ID", "Name", "Price £"]
 
-    print("\nAvailable products: ")
+    print("Available products: ")
     print(tabulate(show_supermarket(), headers=headers, tablefmt="grid"))
 
-    user_input_item_id = input("\nEnter the item id to chose the item: ")
+    user_input_item_id = input("Enter the item id to chose the item: ")
     item_id = user_input_item_id
-    user_input_amount = input("\nHow many do you want? ")
+    user_input_amount = input("How many do you want? ")
     amount = int(user_input_amount)
-    user_input_isPublic = input("\nIs this a public item?(yes/no): ")
+    user_input_isPublic = input("Is this a public item?(yes/no): ")
     if user_input_isPublic == "yes":
         isPublic = True
         reset_ready(order_id)
@@ -76,9 +79,10 @@ def insert(user_id, order_id):
     items = order.get("items", [])
     items.append(new_item)
 
-    order_db.update({"items": items}, Item.order_id == order_id)
+    order_db.update({"items": items}, QUERY.order_id == order_id)
+
+    print("Item added to order")
     return True
-    # return "Item added to order"
 
 
 def update(user_id, order_id):
@@ -86,11 +90,10 @@ def update(user_id, order_id):
 
     if not order:
         return False
-        # return "Order not found, check input"
 
-    item_id_input = input("Enter the item id you want to modify")
-
+    item_id_input = input("Enter the item id you want to modify: ")
     items = order.get("items", [])
+
     user_input_item = None
 
     for item in items:
@@ -99,8 +102,8 @@ def update(user_id, order_id):
             break
 
     if not user_input_item:
+        print("No such item, please add the item with correct command")
         return False
-        # return "No such item, please add the item with correct command"
 
     print("Please enter following info of the item: ")
     quantity = int(input("How many of this item you want now: "))
@@ -115,7 +118,7 @@ def update(user_id, order_id):
     user_input_item["quantity"] = quantity
     user_input_item["isPublic"] = isPublic
 
-    order_db.update({"items": items}, Item.order_id == order_id)
+    order_db.update({"items": items}, QUERY.order_id == order_id)
 
     return True
     # return f"Item {item_id_input} has been updated! "
@@ -134,11 +137,11 @@ def setReady(user_id, order_id):
             user["isReady"] = True
             break
 
-    order_db.update({"users": users}, Item.order_id == order_id)
+    order_db.update({"users": users}, QUERY.order_id == order_id)
 
 
 def get_item_detail(id, keys):
-    item = supermarket.get(Item.item_id == id)
+    item = supermarket.get(QUERY.item_id == id)
     ls = []
     for k in keys:
         ls.append(item[k])
@@ -169,25 +172,27 @@ def get_personal_table(items, user_id):
     return personal_table
 
 
-def print_table(user_id, order_id):
+def print_order(user_id, order_id):
     order = get_order(order_id)
     if not order:
         return False
-        # return "No exsisting order found. Please create an order first!"
 
     items = order.get("items", [])
     if not items:
+        print("No item in order list!")
         return False
-        # return "no item in order list!"
 
     headers = ["Items", "Price", "Amount"]
     headers_public = ["Items", "Price", "Amount", "Addor's ID"]
 
-    print("\nPublic Items: ")
-    print(tabulate(get_public_table(items), headers_public, tablefmt="grid"))
-    print("\nPersonal Items: ")
-    print(
-        tabulate(get_personal_table(items, user_id), headers, tablefmt="grid")
-    )
+    t1 = get_public_table(items)
+    if len(t1) > 0:
+        print("Public Items: ")
+        print(tabulate(t1, headers_public, tablefmt="grid"))
+
+    t2 = get_personal_table(items, user_id)
+    if len(t2) > 0:
+        print("Personal Items: ")
+        print(tabulate(t2, headers, tablefmt="grid"))
 
     return True
