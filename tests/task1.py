@@ -53,19 +53,22 @@ def test_create_new_order(mock_db):
 
     users = random.choice(all_households)["user_ids"]
     user = random.choice(users)
+    # user = "user5"
 
-    assert create_new_order(
-        user
+    assert (
+        create_new_order(user) != False
     ), "expect function create_new_order to return True but get False"
+
     all_orders = order_db.all()
 
     check_fields(
         all_orders, ["order_id", "users", "items", "isReset"], "order database"
     )
     for obj in all_orders:
-        type_check(obj["users"], [str], "`users`")
+        type_check(obj["users"], [dict], "`users`")
+        check_fields(obj["users"], ["user_id", "isReady"], "`users`")
 
-    assert set(all_orders[0]["users"]) == set(
+    assert set(map(lambda o: o["user_id"], all_orders[0]["users"])) == set(
         users
     ), "the `user_ids` and `users` are not matching"
 
@@ -74,6 +77,6 @@ def test_create_new_order(mock_db):
         len(all_orders[0]["items"]) == 0
     ), "expect `items` to be an empty list"
 
-    assert not create_new_order(
-        user
+    assert (
+        create_new_order(user) == False
     ), "expect function create_new_order to return False but get True"

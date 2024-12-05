@@ -9,41 +9,8 @@ household_db = TinyDB(os.path.join(current_dir, "../databases/household.json"))
 QUERY = Query()
 
 
-def add_order(order_id, users, items):
-    if not users or not items:
-        return False
-    order.insert(
-        {
-            "order_id": order_id,
-            "users": users,
-            "items": items,
-            "isReset": False,
-        }
-    )
-    return True
-
-
-def find_orders_by_item(item_name):
-    return order.search(QUERY.item == item_name)
-
-
-def update_order(order_id, update_dict):
-    order.update(update_dict, QUERY.order_id == order_id)
-
-
-def delete_order(order_id):
-    order.remove(QUERY.order_id == order_id)
-
-
-def is_user_active(user_id):
-    active_orders = order.search(
-        (QUERY.users.any(user_id)) & (QUERY.isActive == True)
-    )
-    return len(active_orders) > 0
-
-
 def create_new_order(user_id):
-    if order.search((QUERY.users.any(user_id)) & (QUERY.isReset == False)):
+    if len(order.search(QUERY.users.any(QUERY.user_id == user_id))) > 0:
         return False
 
     user_household = household_db.search(QUERY.user_ids.any(user_id))
@@ -55,14 +22,15 @@ def create_new_order(user_id):
     household_users = household_db.search(QUERY.household_id == household_id)
     user_ids = [uid for user in household_users for uid in user["user_ids"]]
 
+    id = household_id + "ODB"
     new_order = {
         # "type": "order",
         # "order_id": max(order.all(), key=lambda x: x["order_id"])["order_id"]
         # + 1,
-        "order_id": household_id + "ODB",
-        "users": user_ids,
+        "order_id": id,
+        "users": [{"user_id": id, "isReady": False} for id in user_ids],
         "items": [],
         "isReset": False,
     }
     order.insert(new_order)
-    return True
+    return id
