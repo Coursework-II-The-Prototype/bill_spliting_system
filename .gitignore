@@ -2,7 +2,5 @@
 .pytest_cache
 .vscode
 .DS_Store
-databases/order.json
-tests/databases/*
-!tests/databases/supermarket.json
-!tests/databases/household.json
+**/databases/order.json
+**/databases/preparation.json
