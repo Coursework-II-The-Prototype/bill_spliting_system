@@ -178,7 +178,7 @@ def update(user_id, order_id):
 
 
 def setReady(user_id, order_id):
-    user_input = input("Are you ready for placing this order? (yes/no)")
+    user_input = input("Are you ready for placing this order? (yes/no): ")
     if user_input != "yes":
         return
 

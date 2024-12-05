@@ -9,8 +9,12 @@ household_db = TinyDB(os.path.join(current_dir, "../databases/household.json"))
 QUERY = Query()
 
 
+def find_order(user_id):
+    return order.get(QUERY.users.any(QUERY.user_id == user_id))
+
+
 def create_new_order(user_id):
-    if len(order.search(QUERY.users.any(QUERY.user_id == user_id))) > 0:
+    if find_order(user_id):
         return False
 
     user_household = household_db.search(QUERY.user_ids.any(user_id))
