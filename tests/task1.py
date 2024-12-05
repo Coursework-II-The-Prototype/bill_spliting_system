@@ -34,6 +34,7 @@ def test_create_new_order():
     order_db.truncate()
     users = random.choice(all_households)["user_ids"]
     user = random.choice(users)
+
     assert create_new_order(
         user
     ), "expect function create_new_order to return True but get False"
@@ -43,9 +44,7 @@ def test_create_new_order():
         all_orders, ["order_id", "users", "items", "isReset"], "order database"
     )
     for obj in all_orders:
-        type_check(
-            obj["users"], [str], "`users`"
-        )
+        type_check(obj["users"], [str], "`users`")
 
     assert set(all_orders[0]["users"]) == set(
         users
@@ -55,3 +54,7 @@ def test_create_new_order():
     assert (
         len(all_orders[0]["items"]) == 0
     ), "expect `items` to be an empty list"
+
+    assert not create_new_order(
+        user
+    ), "expect function create_new_order to return False but get True"

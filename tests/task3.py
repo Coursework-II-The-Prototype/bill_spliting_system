@@ -1,6 +1,6 @@
 import os
 import pytest
-from utils import check_fields, type_check
+from utils import check_fields
 
 current_dir = os.path.dirname(__file__)
 mock_dir = f"{current_dir}/databases"
@@ -26,76 +26,76 @@ def mock_db(monkeypatch):
     }
 
 
-# def test_move_orders(mock_db):
-#     preparation_db = mock_db["preparation_db"]
-#     move_orders = mock_db["move_orders"]
+def test_move_orders(mock_db):
+    preparation_db = mock_db["preparation_db"]
+    move_orders = mock_db["move_orders"]
 
-#     move_orders(
-#         [
-#             {
-#                 "order_id": "1",
-#                 "users": [{"user_id": "user1", "isReady": False}],
-#                 "items": [],
-#                 "isReset": False,
-#             },
-#             {
-#                 "order_id": "2",
-#                 "users": [
-#                     {"user_id": "user1", "isReady": False},
-#                     {"user_id": "user2", "isReady": True},
-#                 ],
-#                 "items": [],
-#                 "isReset": False,
-#             },
-#             {
-#                 "order_id": "3",
-#                 "users": [],
-#                 "items": [],
-#                 "isReset": False,
-#             },
-#         ]
-#     )
+    move_orders(
+        [
+            {
+                "order_id": "1",
+                "users": [{"user_id": "user1", "isReady": False}],
+                "items": [],
+                "isReset": False,
+            },
+            {
+                "order_id": "2",
+                "users": [
+                    {"user_id": "user1", "isReady": False},
+                    {"user_id": "user2", "isReady": True},
+                ],
+                "items": [],
+                "isReset": False,
+            },
+            {
+                "order_id": "3",
+                "users": [],
+                "items": [],
+                "isReset": False,
+            },
+        ]
+    )
 
-#     orders = preparation_db.all()
-#     assert len(orders) == 3
-#     check_fields(orders, ["order_id", "items"], "preparation database")
+    orders = preparation_db.all()
+    assert len(orders) == 3
+    check_fields(orders, ["order_id", "items"], "preparation database")
 
 
-# def test_calc_cost(mock_db):
-#     calc_cost = mock_db["calc_cost"]
+def test_calc_cost(mock_db):
+    calc_cost = mock_db["calc_cost"]
 
-#     assert (
-#         calc_cost(
-#             [
-#                 {
-#                     "item_id": "1",
-#                     "quantity": 1,
-#                     "isPublic": False,
-#                     "user_id": "1",
-#                 },
-#                 {
-#                     "item_id": "2",
-#                     "quantity": 2,
-#                     "isPublic": False,
-#                     "user_id": "2",
-#                 },
-#                 {
-#                     "item_id": "3",
-#                     "quantity": 3,
-#                     "isPublic": True,
-#                     "user_id": "1",
-#                 },
-#                 {
-#                     "item_id": "4",
-#                     "quantity": 4,
-#                     "isPublic": True,
-#                     "user_id": "2",
-#                 },
-#             ],
-#             "1",
-#             2,
-#         )
-#     ) == 16.5
+    assert (
+        calc_cost(
+            [
+                {
+                    "item_id": "1",
+                    "quantity": 1,
+                    "isPublic": False,
+                    "user_id": "1",
+                },
+                {
+                    "item_id": "2",
+                    "quantity": 2,
+                    "isPublic": False,
+                    "user_id": "2",
+                },
+                {
+                    "item_id": "3",
+                    "quantity": 3,
+                    "isPublic": True,
+                    "user_id": "1",
+                },
+                {
+                    "item_id": "4",
+                    "quantity": 4,
+                    "isPublic": True,
+                    "user_id": "2",
+                },
+            ],
+            "1",
+            2,
+        )
+    ) == 16.5
 
 
 def test_daily_job(mock_db):

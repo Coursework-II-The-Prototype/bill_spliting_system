@@ -14,7 +14,7 @@ mock_dir = f"{current_dir}/databases"
 def mock_db(monkeypatch):
     monkeypatch.setattr(os.path, "dirname", lambda _: mock_dir)
     from utils import get_db
-    from src.shopping import (
+    from src.task2 import (
         get_order,
         get_personal_table,
         get_public_table,
