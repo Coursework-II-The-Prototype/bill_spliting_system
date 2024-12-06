@@ -68,10 +68,11 @@ def insert(user_id, order_id):
     print("Available products: ")
     print(tabulate(show_supermarket(), headers=headers, tablefmt="grid"))
 
-    user_input_item_id = input("Enter the item id to chose the item: ")
-    item_id = user_input_item_id
-    user_input_amount = input("How many do you want? ")
-    amount = int(user_input_amount)
+    item_id = input("Enter the item id to chose the item: ")
+    if not supermarket.get(QUERY.item_id == item_id):
+        return False
+
+    amount = int(input("How many do you want? "))
     user_input_isPublic = input("Is this a public item?(yes/no): ")
     if user_input_isPublic == "yes":
         isPublic = True
@@ -159,8 +160,10 @@ def update(user_id, order_id):
                 item["item_id"] == item_id_input and item["user_id"] == user_id
             )
         ]
+        order_db.update({"items": items}, QUERY.order_id == order_id)
         print("Removed it! ")
         return True
+
     input1 = input("Is this a public item now? (yes/no): ")
 
     if input1 == "yes":
