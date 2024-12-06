@@ -1,0 +1,8 @@
+services:
+  python-app:
+    build: .
+    container_name: python-app
+    volumes:
+      - ./databases:/app/databases:rw
+    stdin_open: true
+    tty: true

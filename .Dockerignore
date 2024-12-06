@@ -1,0 +1,6 @@
+*cache*
+.*
+databases/order.json
+databases/preparation.json
+tests/**/*
+*.md
