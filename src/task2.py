@@ -64,12 +64,12 @@ def insert(user_id, order_id):
         return False
 
     headers = ["Item ID", "Name", "Price £"]
-
     print("Available products: ")
     print(tabulate(show_supermarket(), headers=headers, tablefmt="grid"))
 
     item_id = input("Enter the item id to chose the item: ")
     if not supermarket.get(QUERY.item_id == item_id):
+        print("Invalid item id!")
         return False
 
     amount = int(input("How many do you want? "))
@@ -101,7 +101,7 @@ def insert(user_id, order_id):
 
     order_db.update({"items": items}, QUERY.order_id == order_id)
 
-    print("Item added to order")
+    print("Item added to order!")
     return True
 
 
@@ -111,9 +111,26 @@ def update(user_id, order_id):
     if not order:
         return False
 
-    item_id_input = input("Enter the item id you want to modify: ")
     items = order.get("items", [])
+    if items == []:
+        print("No item in order list!")
+        return True
 
+    headers = ["Item ID", "Name", "Price £", "Amount", "Public item"]
+    print("Available products: ")
+    print(
+        tabulate(
+            get_filtered_table(
+                items,
+                lambda item: item["user_id"] == user_id,
+                ["id", "quantity", "isPublic"],
+            ),
+            headers=headers,
+            tablefmt="grid",
+        )
+    )
+
+    item_id_input = input("Enter the item id you want to modify: ")
     user_input_item = None
 
     # this is used for check if an item exsist in both
@@ -121,9 +138,9 @@ def update(user_id, order_id):
     if isExisted(order_id, user_id, item_id_input, True) and isExisted(
         order_id, user_id, item_id_input, False
     ):
-        print("Item you entered is found in both public and personal lists")
+        print("Item id you entered have both a public and personal item")
         input_public_or_personal = input(
-            "Please state which you want to modify(public/personal): "
+            "Please state which one you want to modify(public/personal): "
         )
         if input_public_or_personal == "public":
             input_isPublic = True
@@ -147,7 +164,7 @@ def update(user_id, order_id):
                 break
 
     if not user_input_item:
-        print("No such item, please add the item with correct command")
+        print("Invalid item id!")
         return False
 
     print("Please enter following info of the item: ")
@@ -193,19 +210,22 @@ def update(user_id, order_id):
 
 def setReady(user_id, order_id):
     user_input = input("Are you ready for placing this order? (yes/no): ")
-    if user_input != "yes":
-        return
+    if user_input == "yes":
+        isReady = True
+        print("Ready for the order!")
+    else:
+        isReady = False
+        print("Ready unset!")
 
     order = get_order(order_id)
     users = order.get("users", [])
 
     for user in users:
         if user["user_id"] == user_id:
-            user["isReady"] = True
+            user["isReady"] = isReady
             break
 
     order_db.update({"users": users}, QUERY.order_id == order_id)
-    print("Ready for the order!")
 
 
 def get_item_detail(id, keys):
@@ -216,28 +236,31 @@ def get_item_detail(id, keys):
     return ls
 
 
-def get_public_table(items):
-    public_items = [item for item in items if item["isPublic"]]
-    public_table = [
-        get_item_detail(item["item_id"], ["name", "price"])
-        + [item["quantity"], item["user_id"]]
-        for item in public_items
+def get_filtered_table(items, predict, keys):
+    i_list = [item for item in items if predict(item)]
+    table = [
+        (
+            ([item["item_id"]] if "id" in keys else [])
+            + get_item_detail(item["item_id"], ["name", "price"])
+            + list(map(lambda key: item[key], [k for k in keys if k != "id"]))
+        )
+        for item in i_list
     ]
-    return public_table
+    return table
+
+
+def get_public_table(items):
+    return get_filtered_table(
+        items, lambda item: item["isPublic"], ["quantity", "user_id"]
+    )
 
 
 def get_personal_table(items, user_id):
-    personal_items = [
-        item
-        for item in items
-        if not item["isPublic"] and item["user_id"] == user_id
-    ]
-    personal_table = [
-        get_item_detail(item["item_id"], ["name", "price"])
-        + [item["quantity"]]
-        for item in personal_items
-    ]
-    return personal_table
+    return get_filtered_table(
+        items,
+        lambda item: not item["isPublic"] and item["user_id"] == user_id,
+        ["quantity"],
+    )
 
 
 def print_order(user_id, order_id):
@@ -250,8 +273,8 @@ def print_order(user_id, order_id):
         print("No item in order list!")
         return False
 
-    headers = ["Items", "Price", "Amount"]
-    headers_public = ["Items", "Price", "Amount", "Addor's ID"]
+    headers = ["Name", "Price £", "Amount"]
+    headers_public = headers + ["Addor's ID"]
 
     t1 = get_public_table(items)
     if len(t1) > 0:

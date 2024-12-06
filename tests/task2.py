@@ -400,3 +400,9 @@ def test_setReady(mock_db):
 
     assert order_db.all()[0]["users"][0]["isReady"] == True
     assert order_db.all()[0]["users"][1]["isReady"] == False
+
+    with patch("builtins.input", side_effect=["no"]):
+        setReady("user1", "1")
+
+    assert order_db.all()[0]["users"][0]["isReady"] == False
+    assert order_db.all()[0]["users"][1]["isReady"] == False
