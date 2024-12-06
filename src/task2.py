@@ -76,7 +76,7 @@ def insert(user_id, order_id):
                 input_item = item
                 break
         input_item["quantity"] += amount
-        order_db.update({"items": items}, Item.order_id == order_id)
+        order_db.update({"items": items}, QUERY.order_id == order_id)
     else:
         new_item = {
             "item_id": item_id,

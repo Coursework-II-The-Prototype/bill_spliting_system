@@ -134,11 +134,7 @@ def test_insert(mock_db, capsys):
     order_db.insert(
         {
             "order_id": "1",
-            "users": [
-                {"user_id": "user1", "isReady": True},
-                {"user_id": "user2", "isReady": False},
-                {"user_id": "user3", "isReady": True},
-            ],
+            "users": [],
             "items": [],
             "isReset": False,
         }
@@ -183,6 +179,36 @@ def test_insert(mock_db, capsys):
         type_check(item["isPublic"], bool, "`isPublic`")
         type_check(item["user_id"], str, "`user_id`")
 
+    order_db.truncate()
+    order_db.insert(
+        {
+            "order_id": "1",
+            "users": [],
+            "items": [
+                {
+                    "item_id": "1",
+                    "quantity": 1,
+                    "isPublic": False,
+                    "user_id": "user1",
+                }
+            ],
+            "isReset": False,
+        }
+    )
+    with patch("builtins.input", side_effect=["1", "2", "yes"]):
+        assert insert("user1", "1")
+    capsys.readouterr()
+
+    assert len(order_db.all()[0]["items"]) == 2
+    assert order_db.all()[0]["items"][1]["quantity"] == 2
+
+    with patch("builtins.input", side_effect=["1", "2", "no"]):
+        assert insert("user1", "1")
+    capsys.readouterr()
+
+    assert len(order_db.all()[0]["items"]) == 2
+    assert order_db.all()[0]["items"][0]["quantity"] == 3
+
 
 def test_update(mock_db):
     order_db = mock_db["order_db"]
@@ -191,9 +217,7 @@ def test_update(mock_db):
     order_db.insert(
         {
             "order_id": "1",
-            "users": [
-                {"user_id": "user1", "isReady": True},
-            ],
+            "users": [],
             "items": [
                 {
                     "item_id": "1",
@@ -237,6 +261,41 @@ def test_update(mock_db):
     assert item["isPublic"] == True
     assert item["user_id"] == "user2"
     assert order_db.all()[0]["isReset"] == True
+
+    order_db.truncate()
+    order_db.insert(
+        {
+            "order_id": "1",
+            "users": [],
+            "items": [
+                {
+                    "item_id": "1",
+                    "quantity": 1,
+                    "isPublic": False,
+                    "user_id": "user1",
+                },
+                {
+                    "item_id": "1",
+                    "quantity": 1,
+                    "isPublic": True,
+                    "user_id": "user1",
+                },
+            ],
+            "isReset": False,
+        }
+    )
+
+    with patch("builtins.input", side_effect=["1", "public", "2", "yes"]):
+        assert update("user1", "1")
+
+    assert order_db.all()[0]["items"][0]["quantity"] == 1
+    assert order_db.all()[0]["items"][1]["quantity"] == 2
+
+    with patch("builtins.input", side_effect=["1", "public", "3", "no"]):
+        assert update("user1", "1")
+
+    assert len(order_db.all()[0]["items"]) == 1
+    assert order_db.all()[0]["items"][0]["quantity"] == 4
 
 
 def test_reset_ready(mock_db):
