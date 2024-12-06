@@ -43,14 +43,24 @@ def reset_ready(order_id):
     )
 
     return True
-    # return "isReady and isReset have been updated"
+
+
+def isExisted(order_id, user_id, item_id, isPublic):
+    orders = get_order(order_id)
+    for item in orders.get("items", []):
+        if (
+            item["item_id"] == item_id
+            and item["user_id"] == user_id
+            and item["isPublic"] == isPublic
+        ):
+            return True
+    return False
 
 
 def insert(user_id, order_id):
     order = get_order(order_id)
 
     if not order:
-        print("Unexpected error")
         return False
 
     headers = ["Item ID", "Name", "Price £"]
@@ -105,19 +115,22 @@ def update(user_id, order_id):
 
     user_input_item = None
 
-    # this is used for check if an item exsist in both personal list and public order list
+    # this is used for check if an item exsist in both
+    # personal list and public order list
     if isExisted(order_id, user_id, item_id_input, True) and isExisted(
         order_id, user_id, item_id_input, False
     ):
+        print("Item you entered is found in both public and personal lists")
         input_public_or_personal = input(
-            "Item you entered is found in both public and personal lists, please state which you want to modify(public/personal): "
+            "Please state which you want to modify(public/personal): "
         )
         if input_public_or_personal == "public":
             input_isPublic = True
         else:
             input_isPublic = False
         for item in items:
-            # if indeed can be found in both lists, ask user whether they want to modify peronal list or public list
+            # if indeed can be found in both lists,
+            # ask user whether they want to modify peronal list or public list
             if (
                 item["item_id"] == item_id_input
                 and item["user_id"] == user_id
@@ -143,9 +156,7 @@ def update(user_id, order_id):
             item
             for item in items
             if not (
-                item["item_id"] == item_id_input
-                and item["user_id"] == user_id
-                and item["isPublic"] == input_isPublic
+                item["item_id"] == item_id_input and item["user_id"] == user_id
             )
         ]
         print("Removed it! ")
@@ -173,8 +184,8 @@ def update(user_id, order_id):
     order["items"] = list(unique_item.values())
     order_db.update({"items": order["items"]}, QUERY.order_id == order_id)
 
+    print(f"Item {item_id_input} has been updated!")
     return True
-    # return f"Item {item_id_input} has been updated! "
 
 
 def setReady(user_id, order_id):
@@ -191,6 +202,7 @@ def setReady(user_id, order_id):
             break
 
     order_db.update({"users": users}, QUERY.order_id == order_id)
+    print("Ready for the order!")
 
 
 def get_item_detail(id, keys):
@@ -249,15 +261,3 @@ def print_order(user_id, order_id):
         print(tabulate(t2, headers, tablefmt="grid"))
 
     return True
-
-
-def isExisted(order_id, user_id, item_id, isPublic):
-    orders = get_order(order_id)
-    for item in orders.get("items", []):
-        if (
-            item["item_id"] == item_id
-            and item["user_id"] == user_id
-            and item["isPublic"] == isPublic
-        ):
-            return True
-    return False

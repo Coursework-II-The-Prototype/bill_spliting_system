@@ -37,4 +37,5 @@ def create_new_order(user_id):
         "isReset": False,
     }
     order.insert(new_order)
+    print("New order created!")
     return id

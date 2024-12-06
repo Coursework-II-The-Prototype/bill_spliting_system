@@ -1,4 +1,6 @@
 import os
+import platform
+import subprocess
 import task1
 import task2
 from tinydb import TinyDB
@@ -16,7 +18,10 @@ def get_all_demo_users():
 
 
 def my_cls():
-    os.system("cls") | os.system("clear")
+    if platform.system() == "Windows":
+        subprocess.run("cls", shell=True)
+    else:
+        subprocess.run("clear", shell=True)
 
 
 def main():
@@ -26,6 +31,7 @@ def main():
     u_id = ""
     while not (u_id in us):
         u_id = input("Login: ")
+    my_cls()
 
     o_id = task1.find_order(u_id)
     if o_id:
