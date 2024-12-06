@@ -69,15 +69,24 @@ def insert(user_id, order_id):
     else:
         isPublic = False
 
-    new_item = {
-        "item_id": item_id,
-        "quantity": amount,
-        "isPublic": isPublic,
-        "user_id": user_id,
-    }
+    if isExisted(order_id, user_id, item_id, isPublic):
+        items = order.get("items", [])
+        for item in items:
+            if item["item_id"] == item_id and item["user_id"] == user_id:
+                input_item = item
+                break
+        input_item["quantity"] += amount
+        order_db.update({"items": items}, QUERY.order_id == order_id)
+    else:
+        new_item = {
+            "item_id": item_id,
+            "quantity": amount,
+            "isPublic": isPublic,
+            "user_id": user_id,
+        }
 
-    items = order.get("items", [])
-    items.append(new_item)
+        items = order.get("items", [])
+        items.append(new_item)
 
     order_db.update({"items": items}, QUERY.order_id == order_id)
 
@@ -96,10 +105,32 @@ def update(user_id, order_id):
 
     user_input_item = None
 
-    for item in items:
-        if item["item_id"] == item_id_input and item["user_id"] == user_id:
-            user_input_item = item
-            break
+    # this is used for check if an item exsist in both personal list and public order list
+    if isExisted(order_id, user_id, item_id_input, True) and isExisted(
+        order_id, user_id, item_id_input, False
+    ):
+        input_public_or_personal = input(
+            "Item you entered is found in both public and personal lists, please state which you want to modify(public/personal): "
+        )
+        if input_public_or_personal == "public":
+            input_isPublic = True
+        else:
+            input_isPublic = False
+        for item in items:
+            # if indeed can be found in both lists, ask user whether they want to modify peronal list or public list
+            if (
+                item["item_id"] == item_id_input
+                and item["user_id"] == user_id
+                and item["isPublic"] == input_isPublic
+            ):
+                user_input_item = item
+                break
+    else:
+        # used to find item just according to item_id and user_id.
+        for item in items:
+            if item["item_id"] == item_id_input and item["user_id"] == user_id:
+                user_input_item = item
+                break
 
     if not user_input_item:
         print("No such item, please add the item with correct command")
@@ -107,6 +138,18 @@ def update(user_id, order_id):
 
     print("Please enter following info of the item: ")
     quantity = int(input("How many of this item you want now: "))
+    if quantity <= 0:
+        items = [
+            item
+            for item in items
+            if not (
+                item["item_id"] == item_id_input
+                and item["user_id"] == user_id
+                and item["isPublic"] == input_isPublic
+            )
+        ]
+        print("Removed it! ")
+        return True
     input1 = input("Is this a public item now? (yes/no): ")
 
     if input1 == "yes":
@@ -118,7 +161,17 @@ def update(user_id, order_id):
     user_input_item["quantity"] = quantity
     user_input_item["isPublic"] = isPublic
 
-    order_db.update({"items": items}, QUERY.order_id == order_id)
+    unique_item = {}
+    for item in items:
+        key = (item["item_id"], item["user_id"], item["isPublic"])
+        if key in unique_item:
+            unique_item[key]["quantity"] += item["quantity"]
+            item["quantity"] = 0
+        else:
+            unique_item[key] = item
+
+    order["items"] = list(unique_item.values())
+    order_db.update({"items": order["items"]}, QUERY.order_id == order_id)
 
     return True
     # return f"Item {item_id_input} has been updated! "
@@ -196,3 +249,15 @@ def print_order(user_id, order_id):
         print(tabulate(t2, headers, tablefmt="grid"))
 
     return True
+
+
+def isExisted(order_id, user_id, item_id, isPublic):
+    orders = get_order(order_id)
+    for item in orders.get("items", []):
+        if (
+            item["item_id"] == item_id
+            and item["user_id"] == user_id
+            and item["isPublic"] == isPublic
+        ):
+            return True
+    return False
