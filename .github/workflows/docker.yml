@@ -68,5 +68,5 @@ jobs:
 
         - name: Run image 
           run: |
-            docker run -d ghcr.io/coursework-ii-the-prototype/bill_spliting_system:latest poetry run python src/cli.py
+            docker run -d ghcr.io/coursework-ii-the-prototype/bill_spliting_system:latest poetry run python src/app.py
             docker run -d ghcr.io/coursework-ii-the-prototype/bill_spliting_system:latest poetry run python src/server.py
