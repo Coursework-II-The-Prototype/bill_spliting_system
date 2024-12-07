@@ -53,7 +53,6 @@ def test_create_new_order(mock_db):
 
     users = random.choice(all_households)["user_ids"]
     user = random.choice(users)
-    # user = "user5"
 
     assert (
         create_new_order(user) != False

@@ -4,3 +4,4 @@
 .DS_Store
 **/databases/order.json
 **/databases/preparation.json
+data/

@@ -179,6 +179,12 @@ def test_insert(mock_db, capsys):
         type_check(item["isPublic"], bool, "`isPublic`")
         type_check(item["user_id"], str, "`user_id`")
 
+    # check invalid id
+    with patch("builtins.input", side_effect=["99", "1", "yes"]):
+        assert not insert("user1", "1")
+    capsys.readouterr()
+
+    # check same id increment
     order_db.truncate()
     order_db.insert(
         {
@@ -210,7 +216,7 @@ def test_insert(mock_db, capsys):
     assert order_db.all()[0]["items"][0]["quantity"] == 3
 
 
-def test_update(mock_db):
+def test_update(mock_db, capsys):
     order_db = mock_db["order_db"]
     update = mock_db["update"]
 
@@ -244,6 +250,7 @@ def test_update(mock_db):
 
     with patch("builtins.input", side_effect=["1", "2", "no"]):
         assert update("user1", "1")
+    capsys.readouterr()
 
     item = order_db.all()[0]["items"][0]
     assert item["item_id"] == "1"
@@ -254,6 +261,7 @@ def test_update(mock_db):
 
     with patch("builtins.input", side_effect=["1", "4", "yes"]):
         assert update("user2", "1")
+    capsys.readouterr()
 
     item = order_db.all()[0]["items"][1]
     assert item["item_id"] == "1"
@@ -262,6 +270,11 @@ def test_update(mock_db):
     assert item["user_id"] == "user2"
     assert order_db.all()[0]["isReset"] == True
 
+    with patch("builtins.input", side_effect=["99", "1", "yes"]):
+        assert not update("user1", "1")
+    capsys.readouterr()
+
+    # check and same public personal order
     order_db.truncate()
     order_db.insert(
         {
@@ -287,15 +300,45 @@ def test_update(mock_db):
 
     with patch("builtins.input", side_effect=["1", "public", "2", "yes"]):
         assert update("user1", "1")
+    capsys.readouterr()
 
-    assert order_db.all()[0]["items"][0]["quantity"] == 1
-    assert order_db.all()[0]["items"][1]["quantity"] == 2
+    items = order_db.all()[0]["items"]
+    assert items[0]["quantity"] == 1
+    assert items[1]["quantity"] == 2
 
+    # check isPublic change increment
     with patch("builtins.input", side_effect=["1", "public", "3", "no"]):
         assert update("user1", "1")
+    capsys.readouterr()
 
-    assert len(order_db.all()[0]["items"]) == 1
-    assert order_db.all()[0]["items"][0]["quantity"] == 4
+    items = order_db.all()[0]["items"]
+    assert len(items) == 1
+    assert items[0]["quantity"] == 4
+
+    # check amount 0 remove order
+    order_db.truncate()
+    order_db.insert(
+        {
+            "order_id": "1",
+            "users": [],
+            "items": [
+                {
+                    "item_id": "1",
+                    "quantity": 1,
+                    "isPublic": False,
+                    "user_id": "user1",
+                }
+            ],
+            "isReset": False,
+        }
+    )
+
+    with patch("builtins.input", side_effect=["1", "0"]):
+        assert update("user1", "1")
+    capsys.readouterr()
+
+    items = order_db.all()[0]["items"]
+    assert len(items) == 0
 
 
 def test_reset_ready(mock_db):
@@ -356,4 +399,10 @@ def test_setReady(mock_db):
         setReady("user1", "1")
 
     assert order_db.all()[0]["users"][0]["isReady"] == True
+    assert order_db.all()[0]["users"][1]["isReady"] == False
+
+    with patch("builtins.input", side_effect=["no"]):
+        setReady("user1", "1")
+
+    assert order_db.all()[0]["users"][0]["isReady"] == False
     assert order_db.all()[0]["users"][1]["isReady"] == False
