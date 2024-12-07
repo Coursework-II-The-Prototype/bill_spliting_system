@@ -2,7 +2,7 @@ import os
 from tinydb import TinyDB, Query
 from tabulate import tabulate
 
-from logger import time_def
+from .logger import time_def
 
 current_dir = os.path.dirname(__file__)
 supermarket_db_path = os.path.join(
