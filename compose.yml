@@ -1,13 +1,17 @@
 services:
-  cli:
-    build: .
-    volumes:
-      - ./databases:/app/databases:rw
-    stdin_open: true
-    tty: true
+  # app:
+  #   build: .
+  #   volumes:
+  #     - ./databases:/app/databases:rw
+  #   stdin_open: true
+  #   tty: true
+  #   command: poetry run python src/app.py
 
   server:
     build: .
+    ports:
+      - 8000:8000
+    container_name: server
     volumes:
       - ./databases:/app/databases:rw
     command: poetry run python src/server.py
@@ -19,3 +23,5 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./data/prometheus:/prometheus:rw
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
