@@ -23,7 +23,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{github.repository_owner}}/${{github.repository}}
+          images: ghcr.io/coursework-ii-the-prototype/bill_spliting_system
           tags: |
             type=sha
             type=raw,value=latest,enable=true
@@ -64,8 +64,8 @@ jobs:
 
         - name: Pull image
           run: |
-            docker pull ghcr.io/${{github.repository_owner}}/${{github.repository}}:latest
+            docker pull ghcr.io/coursework-ii-the-prototype/bill_spliting_system:latest
 
         - name: Run image
           run: |
-            docker run -d ghcr.io/${{github.repository_owner}}/${{github.repository}}:latest poetry run python src/cli.py
+            docker run -d ghcr.io/coursework-ii-the-prototype/bill_spliting_system:latest poetry run python src/cli.py
