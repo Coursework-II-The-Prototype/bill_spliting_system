@@ -4,6 +4,7 @@ import subprocess
 import task1
 import task2
 from tinydb import TinyDB
+from prometheus_client import start_http_server
 
 current_dir = os.path.dirname(__file__)
 household_db = TinyDB(os.path.join(current_dir, "../databases/household.json"))
@@ -73,4 +74,5 @@ def main():
 
 
 if __name__ == "__main__":
+    start_http_server(8000)
     main()
