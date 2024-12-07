@@ -5,3 +5,4 @@
 **/databases/order.json
 **/databases/preparation.json
 data/
+.coverage
