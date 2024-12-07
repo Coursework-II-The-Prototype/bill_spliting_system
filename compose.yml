@@ -1,8 +1,12 @@
 services:
-  python-app:
+  cli:
     build: .
-    container_name: python-app
     volumes:
       - ./databases:/app/databases:rw
     stdin_open: true
     tty: true
+  server:
+    build: .
+    volumes:
+      - ./databases:/app/databases:rw
+    command: poetry run python src/server.py
