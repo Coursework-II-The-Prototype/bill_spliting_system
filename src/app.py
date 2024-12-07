@@ -4,6 +4,7 @@ import subprocess
 import task1
 import task2
 from tinydb import TinyDB
+from prometheus_client import start_http_server
 
 from logger import logger, time_def
 
@@ -77,4 +78,5 @@ def main():
 
 
 if __name__ == "__main__":
+    start_http_server(8000)
     main()
