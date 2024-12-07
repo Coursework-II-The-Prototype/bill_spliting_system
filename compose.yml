@@ -1,11 +1,12 @@
 services:
-  # app:
-  #   build: .
-  #   volumes:
-  #     - ./databases:/app/databases:rw
-  #   stdin_open: true
-  #   tty: true
-  #   command: poetry run python src/app.py
+  app:
+    build: .
+    volumes:
+      - ./databases:/app/databases:rw
+      - ./data:/app/data:rw
+    stdin_open: true
+    tty: true
+    command: poetry run python src/app.py
 
   server:
     build: .

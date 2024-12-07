@@ -6,6 +6,8 @@ import task2
 from tinydb import TinyDB
 from prometheus_client import start_http_server
 
+from logger import logger, time_def
+
 current_dir = os.path.dirname(__file__)
 household_db = TinyDB(os.path.join(current_dir, "../databases/household.json"))
 order_db = TinyDB(os.path.join(current_dir, "../databases/order.json"))
@@ -32,11 +34,15 @@ def main():
     u_id = ""
     while not (u_id in us):
         u_id = input("Login: ")
+    logger.info(f"login as {u_id}")
     my_cls()
 
-    o_id = task1.find_order(u_id)
+    o_id = time_def(task1.find_order, [u_id])
+
     if o_id:
         o_id = o_id["order_id"]
+        logger.info(f"order {o_id}")
+
     code = ""
     while True:
         if not o_id:
@@ -44,10 +50,8 @@ def main():
             my_cls()
             match (code):
                 case "n":
-                    o_id = task1.create_new_order(u_id)
-                    if o_id == False:
-                        print("Unexpected error")
-                        return
+                    o_id = time_def(task1.create_new_order, [u_id])
+                    logger.info(f"order {o_id}")
                 case "q":
                     break
                 case _:
@@ -66,7 +70,7 @@ def main():
                 case "r":
                     task2.setReady(u_id, o_id)
                 case "p":
-                    task2.print_order(u_id, o_id)
+                    time_def(task2.print_order, [u_id, o_id])
                 case "q":
                     break
                 case _:

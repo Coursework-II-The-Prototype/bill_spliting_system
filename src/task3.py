@@ -1,5 +1,5 @@
-from tinydb import TinyDB, Query
 import os
+from tinydb import TinyDB, Query
 
 
 QUERY = Query()
