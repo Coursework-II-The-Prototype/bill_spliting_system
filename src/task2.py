@@ -135,9 +135,14 @@ def update(user_id, order_id):
         return False
 
     items = order.get("items", [])
-    if items == []:
+    table = get_filtered_table(
+        items,
+        lambda item: item["user_id"] == user_id,
+        ["id", "quantity", "isPublic"],
+    )
+    if len(table) == 0:
         print("No item in order list!")
-        return True
+        return False
 
     headers = ["Item ID", "Name", "Price £", "Amount", "Public item"]
     print("Available products: ")
@@ -145,11 +150,7 @@ def update(user_id, order_id):
         print,
         [
             tabulate(
-                get_filtered_table(
-                    items,
-                    lambda item: item["user_id"] == user_id,
-                    ["id", "quantity", "isPublic"],
-                ),
+                table,
                 headers=headers,
                 tablefmt="grid",
             )

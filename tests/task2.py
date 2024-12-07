@@ -18,6 +18,7 @@ def mock_db(monkeypatch):
         get_order,
         get_personal_table,
         get_public_table,
+        print_order,
         insert,
         update,
         reset_ready,
@@ -32,6 +33,7 @@ def mock_db(monkeypatch):
         "get_order": get_order,
         "get_personal_table": get_personal_table,
         "get_public_table": get_public_table,
+        "print_order": print_order,
         "insert": insert,
         "update": update,
         "reset_ready": reset_ready,
@@ -67,7 +69,7 @@ def test_get_order(mock_db):
     assert get_order(id)["order_id"] == id
 
 
-def test_print(mock_db):
+def test_get_table(mock_db):
     order_db = mock_db["order_db"]
     get_order = mock_db["get_order"]
     get_personal_table = mock_db["get_personal_table"]
@@ -82,25 +84,25 @@ def test_print(mock_db):
                     "item_id": "1",
                     "quantity": 1,
                     "isPublic": False,
-                    "user_id": "1",
+                    "user_id": "user1",
                 },
                 {
                     "item_id": "3",
                     "quantity": 4,
                     "isPublic": True,
-                    "user_id": "1",
+                    "user_id": "user1",
                 },
                 {
                     "item_id": "2",
                     "quantity": 3,
                     "isPublic": False,
-                    "user_id": "2",
+                    "user_id": "user2",
                 },
                 {
                     "item_id": "4",
                     "quantity": 2,
                     "isPublic": True,
-                    "user_id": "2",
+                    "user_id": "user2",
                 },
             ],
             "isReset": False,
@@ -108,7 +110,7 @@ def test_print(mock_db):
     )
     order = get_order("1")
 
-    t1 = get_personal_table(order["items"], "1")
+    t1 = get_personal_table(order["items"], "user1")
     assert len(t1) == 1
     assert t1[0][0] == "a"
     assert t1[0][1] == 4
@@ -119,12 +121,70 @@ def test_print(mock_db):
     assert t2[0][0] == "c"
     assert t2[0][1] == 3
     assert t2[0][2] == 4
-    assert t2[0][3] == "1"
+    assert t2[0][3] == "user1"
 
     assert t2[1][0] == "d"
     assert t2[1][1] == 1.5
     assert t2[1][2] == 2
-    assert t2[1][3] == "2"
+    assert t2[1][3] == "user2"
+
+
+def test_print_order(mock_db):
+    order_db = mock_db["order_db"]
+    print_order = mock_db["print_order"]
+
+    order_db.insert(
+        {
+            "order_id": "1",
+            "users": ["1", "2"],
+            "items": [
+                {
+                    "item_id": "1",
+                    "quantity": 1,
+                    "isPublic": False,
+                    "user_id": "user2",
+                },
+            ],
+            "isReset": False,
+        }
+    )
+    assert not print_order("user1", "1")
+
+    order_db.truncate()
+    order_db.insert(
+        {
+            "order_id": "1",
+            "users": ["1", "2"],
+            "items": [
+                {
+                    "item_id": "1",
+                    "quantity": 1,
+                    "isPublic": False,
+                    "user_id": "user1",
+                },
+            ],
+            "isReset": False,
+        }
+    )
+    assert print_order("user1", "1")
+
+    order_db.truncate()
+    order_db.insert(
+        {
+            "order_id": "1",
+            "users": ["1", "2"],
+            "items": [
+                {
+                    "item_id": "1",
+                    "quantity": 1,
+                    "isPublic": True,
+                    "user_id": "user2",
+                },
+            ],
+            "isReset": False,
+        }
+    )
+    assert print_order("user1", "1")
 
 
 def test_insert(mock_db, capsys):
@@ -274,6 +334,38 @@ def test_update(mock_db, capsys):
         assert not update("user1", "1")
     capsys.readouterr()
 
+    # exit early if empty
+    order_db.truncate()
+    order_db.insert(
+        {
+            "order_id": "1",
+            "users": [],
+            "items": [],
+            "isReset": False,
+        }
+    )
+    assert not update("user1", "1")
+    capsys.readouterr()
+
+    order_db.truncate()
+    order_db.insert(
+        {
+            "order_id": "1",
+            "users": [],
+            "items": [
+                {
+                    "item_id": "1",
+                    "quantity": 1,
+                    "isPublic": True,
+                    "user_id": "user2",
+                },
+            ],
+            "isReset": False,
+        }
+    )
+    assert not update("user1", "1")
+    capsys.readouterr()
+
     # check and same public personal order
     order_db.truncate()
     order_db.insert(
@@ -289,6 +381,18 @@ def test_update(mock_db, capsys):
                 },
                 {
                     "item_id": "1",
+                    "quantity": 1,
+                    "isPublic": True,
+                    "user_id": "user1",
+                },
+                {
+                    "item_id": "2",
+                    "quantity": 1,
+                    "isPublic": False,
+                    "user_id": "user1",
+                },
+                {
+                    "item_id": "2",
                     "quantity": 1,
                     "isPublic": True,
                     "user_id": "user1",
@@ -310,10 +414,14 @@ def test_update(mock_db, capsys):
     with patch("builtins.input", side_effect=["1", "public", "3", "no"]):
         assert update("user1", "1")
     capsys.readouterr()
+    with patch("builtins.input", side_effect=["2", "personal", "2", "yes"]):
+        assert update("user1", "1")
+    capsys.readouterr()
 
     items = order_db.all()[0]["items"]
-    assert len(items) == 1
+    assert len(items) == 2
     assert items[0]["quantity"] == 4
+    assert items[1]["quantity"] == 3
 
     # check amount 0 remove order
     order_db.truncate()

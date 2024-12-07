@@ -76,6 +76,8 @@ def test_create_new_order(mock_db):
         len(all_orders[0]["items"]) == 0
     ), "expect `items` to be an empty list"
 
-    assert (
-        create_new_order(user) == False
+    assert not create_new_order(
+        user
     ), "expect function create_new_order to return False but get True"
+
+    assert not create_new_order("who am i?")
