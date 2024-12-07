@@ -6,7 +6,7 @@ import task2
 from tinydb import TinyDB
 from prometheus_client import start_http_server
 
-from logger import logger, time_def
+from logger import logger, time_def, log_user_input
 
 current_dir = os.path.dirname(__file__)
 household_db = TinyDB(os.path.join(current_dir, "../databases/household.json"))
@@ -47,6 +47,7 @@ def main():
     while True:
         if not o_id:
             code = input("Action ([n]ew order, [q]uit): ")
+            log_user_input(code)
             my_cls()
             match (code):
                 case "n":
@@ -58,9 +59,10 @@ def main():
                     print("No such action")
         else:
             code = input(
-                "Action ([p]rint table, [a]dd item, [e]dit item, "
-                + "[r]eady to order, [q]uit): "
+                "Action ([p]rint table, [a]dd item, [e]dit item, \
+[r]eady to order, [q]uit): "
             )
+            log_user_input(code)
             my_cls()
             match (code):
                 case "a":
