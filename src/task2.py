@@ -84,6 +84,10 @@ def insert(user_id, order_id):
 
     amount = int(input("How many do you want? "))
     log_user_input(amount)
+    if amount <= 0:
+        print("Only positive integers are accpeted")
+        return False
+
     user_input_isPublic = input("Is this a public item?(yes/no): ")
     log_user_input(user_input_isPublic)
 

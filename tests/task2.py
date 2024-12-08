@@ -239,8 +239,12 @@ def test_insert(mock_db, capsys):
         type_check(item["isPublic"], bool, "`isPublic`")
         type_check(item["user_id"], str, "`user_id`")
 
-    # check invalid id
-    with patch("builtins.input", side_effect=["99", "1", "yes"]):
+    # check invalid input
+    with patch("builtins.input", side_effect=["99"]):
+        assert not insert("user1", "1")
+    capsys.readouterr()
+
+    with patch("builtins.input", side_effect=["1", "0"]):
         assert not insert("user1", "1")
     capsys.readouterr()
 
