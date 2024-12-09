@@ -2,6 +2,7 @@ import os
 import random
 import pytest
 from tests.utils import check_fields, type_check
+from hypothesis import given, strategies as st
 
 from tinydb import TinyDB, Query
 
@@ -51,11 +52,17 @@ def test_create_new_order(mock_db):
     order_db = mock_db["order_db"]
     create_new_order = mock_db["create_new_order"]
 
+    @given(st.text())
+    def non_user(s):
+        assert not create_new_order(s)
+
+    non_user()
+
     users = random.choice(all_households)["user_ids"]
     user = random.choice(users)
 
-    assert (
-        create_new_order(user) != False
+    assert create_new_order(
+        user
     ), "expect function create_new_order to return True but get False"
 
     all_orders = order_db.all()
@@ -79,5 +86,3 @@ def test_create_new_order(mock_db):
     assert not create_new_order(
         user
     ), "expect function create_new_order to return False but get True"
-
-    assert not create_new_order("who am i?")

@@ -1,5 +1,5 @@
 import os
-from tinydb import TinyDB
+from tinydb import TinyDB, Query
 
 
 def get_db(name):
@@ -24,3 +24,7 @@ def type_check(var, _type, name):
         ), msg
     else:
         assert isinstance(var, _type), msg
+
+
+def update_db(db, obj, id):
+    db.update(obj, Query().order_id == id)

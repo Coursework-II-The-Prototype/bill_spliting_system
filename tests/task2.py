@@ -1,7 +1,9 @@
 import os
 import pytest
 from unittest.mock import patch
-from utils import check_fields, type_check
+from hypothesis import given, strategies as st
+from utils import check_fields, type_check, update_db
+from deepdiff import DeepDiff
 from tinydb import Query
 
 QUERY = Query()
@@ -26,10 +28,12 @@ def mock_db(monkeypatch):
     )
 
     order_db = get_db("order")
+    supermarket_db = get_db("supermarket")
     order_db.truncate()
 
     return {
         "order_db": order_db,
+        "supermarket_db": supermarket_db,
         "get_order": get_order,
         "get_personal_table": get_personal_table,
         "get_public_table": get_public_table,
@@ -59,13 +63,16 @@ def test_get_order(mock_db):
     order_db = mock_db["order_db"]
     get_order = mock_db["get_order"]
 
-    order_db.insert({"order_id": "-"})
-    order_db.insert({"order_id": ":)"})
-    assert not get_order("1")
+    @given(st.text())
+    def insert_rand(s):
+        order_db.insert({"order_id": s})
+
+    insert_rand()
+    assert not get_order("order1")
 
     id = "myorder"
     order_db.insert({"order_id": id})
-    order_db.insert({"order_id": ":("})
+    insert_rand()
     assert get_order(id)["order_id"] == id
 
 
@@ -78,7 +85,7 @@ def test_get_table(mock_db):
     order_db.insert(
         {
             "order_id": "1",
-            "users": ["1", "2"],
+            "users": [],
             "items": [
                 {
                     "item_id": "1",
@@ -108,25 +115,14 @@ def test_get_table(mock_db):
             "isReset": False,
         }
     )
+
     order = get_order("1")
 
     t1 = get_personal_table(order["items"], "user1")
-    assert len(t1) == 1
-    assert t1[0][0] == "a"
-    assert t1[0][1] == 4
-    assert t1[0][2] == 1
+    assert DeepDiff(t1, [["a", 10, 1]]) == {}
 
     t2 = get_public_table(order["items"])
-    assert len(t2) == 2
-    assert t2[0][0] == "c"
-    assert t2[0][1] == 3
-    assert t2[0][2] == 4
-    assert t2[0][3] == "user1"
-
-    assert t2[1][0] == "d"
-    assert t2[1][1] == 1.5
-    assert t2[1][2] == 2
-    assert t2[1][3] == "user2"
+    assert DeepDiff(t2, [["c", 30, 4, "user1"], ["d", 40, 2, "user2"]]) == {}
 
 
 def test_print_order(mock_db):
@@ -136,25 +132,31 @@ def test_print_order(mock_db):
     order_db.insert(
         {
             "order_id": "1",
-            "users": ["1", "2"],
+            "users": [],
+            "items": [],
+            "isReset": False,
+        }
+    )
+    update_db(
+        order_db,
+        {
             "items": [
                 {
                     "item_id": "1",
                     "quantity": 1,
                     "isPublic": False,
                     "user_id": "user2",
-                },
-            ],
-            "isReset": False,
-        }
+                }
+            ]
+        },
+        "1",
     )
+
     assert not print_order("user1", "1")
 
-    order_db.truncate()
-    order_db.insert(
+    update_db(
+        order_db,
         {
-            "order_id": "1",
-            "users": ["1", "2"],
             "items": [
                 {
                     "item_id": "1",
@@ -162,17 +164,15 @@ def test_print_order(mock_db):
                     "isPublic": False,
                     "user_id": "user1",
                 },
-            ],
-            "isReset": False,
-        }
+            ]
+        },
+        "1",
     )
     assert print_order("user1", "1")
 
-    order_db.truncate()
-    order_db.insert(
+    update_db(
+        order_db,
         {
-            "order_id": "1",
-            "users": ["1", "2"],
             "items": [
                 {
                     "item_id": "1",
@@ -180,9 +180,9 @@ def test_print_order(mock_db):
                     "isPublic": True,
                     "user_id": "user2",
                 },
-            ],
-            "isReset": False,
-        }
+            ]
+        },
+        "1",
     )
     assert print_order("user1", "1")
 

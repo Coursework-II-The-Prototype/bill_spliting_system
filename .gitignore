@@ -6,3 +6,4 @@
 **/databases/preparation.json
 data/
 .coverage
+.hypothesis

@@ -95,7 +95,7 @@ def test_calc_cost(mock_db):
             "1",
             2,
         )
-    ) == 16.5
+    ) == 140
 
 
 def test_daily_job(mock_db):

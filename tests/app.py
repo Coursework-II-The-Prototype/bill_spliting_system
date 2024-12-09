@@ -3,6 +3,7 @@ import pytest
 import random
 from tinydb import TinyDB
 from unittest.mock import patch
+from hypothesis import given, strategies as st
 
 current_dir = os.path.dirname(__file__)
 mock_dir = f"{current_dir}/databases"
@@ -81,3 +82,18 @@ def test_app_new_order(mock_db, capsys):
     assert item["item_id"] == "1"
     assert item["isPublic"] == False
     assert item["quantity"] == 2
+
+
+def test_rand_app(mock_db, capsys):
+    main = mock_db["main"]
+
+    @given(st.characters())
+    def rand_inp(ls):
+        chrs = ls.split()
+        try:
+            with patch("builtins.input", side_effect=["user1"] + chrs + ["q"]):
+                main()
+            capsys.readouterr()
+        except Exception as e:
+            pytest.fail(f"An exception was raised: {e}")
+    rand_inp()
