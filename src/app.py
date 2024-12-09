@@ -1,12 +1,11 @@
 import os
 import platform
 import subprocess
-import task1
-import task2
+import src.task1
+import src.task2
 from tinydb import TinyDB
-from prometheus_client import start_http_server
 
-from logger import logger, time_def
+from src.logger import logger, time_def, log_user_input
 
 current_dir = os.path.dirname(__file__)
 household_db = TinyDB(os.path.join(current_dir, "../databases/household.json"))
@@ -37,7 +36,7 @@ def main():
     logger.info(f"login as {u_id}")
     my_cls()
 
-    o_id = time_def(task1.find_order, [u_id])
+    o_id = time_def(src.task1.find_order, [u_id])
 
     if o_id:
         o_id = o_id["order_id"]
@@ -47,10 +46,11 @@ def main():
     while True:
         if not o_id:
             code = input("Action ([n]ew order, [q]uit): ")
+            log_user_input(code)
             my_cls()
             match (code):
                 case "n":
-                    o_id = time_def(task1.create_new_order, [u_id])
+                    o_id = time_def(src.task1.create_new_order, [u_id])
                     logger.info(f"order {o_id}")
                 case "q":
                     break
@@ -58,19 +58,20 @@ def main():
                     print("No such action")
         else:
             code = input(
-                "Action ([p]rint table, [a]dd item, [e]dit item, "
-                + "[r]eady to order, [q]uit): "
+                "Action ([p]rint table, [a]dd item, [e]dit item, \
+[r]eady to order, [q]uit): "
             )
+            log_user_input(code)
             my_cls()
             match (code):
                 case "a":
-                    task2.insert(u_id, o_id)
+                    src.task2.insert(u_id, o_id)
                 case "e":
-                    task2.update(u_id, o_id)
+                    src.task2.update(u_id, o_id)
                 case "r":
-                    task2.setReady(u_id, o_id)
+                    src.task2.setReady(u_id, o_id)
                 case "p":
-                    time_def(task2.print_order, [u_id, o_id])
+                    time_def(src.task2.print_order, [u_id, o_id])
                 case "q":
                     break
                 case _:
@@ -78,5 +79,4 @@ def main():
 
 
 if __name__ == "__main__":
-    start_http_server(8000)
     main()

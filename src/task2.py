@@ -2,7 +2,7 @@ import os
 from tinydb import TinyDB, Query
 from tabulate import tabulate
 
-from .logger import time_def
+from src.logger import time_def, log_error, called_with, logger, log_user_input
 
 current_dir = os.path.dirname(__file__)
 supermarket_db_path = os.path.join(
@@ -22,14 +22,16 @@ def show_supermarket():
     return table
 
 
-def get_order(id):
-    o = time_def(order_db.get, [QUERY.order_id == id])
-    if not o:
-        print(f"get_order can't find order with order_id {id}")
-    return o
+def get_order(order_id):
+    called_with(order_id)
+    order = time_def(order_db.get, [QUERY.order_id == order_id])
+    if not order:
+        log_error(f"can't find order with order_id {order_id}")
+    return order
 
 
 def reset_ready(order_id):
+    called_with(order_id)
     order = get_order(order_id)
 
     if not order:
@@ -44,6 +46,7 @@ def reset_ready(order_id):
         {"users": users, "isReset": True}, QUERY.order_id == order_id
     )
 
+    logger.info(f"ready state of users of order {order_id} reset")
     return True
 
 
@@ -60,6 +63,7 @@ def isExisted(order_id, user_id, item_id, isPublic):
 
 
 def insert(user_id, order_id):
+    called_with([user_id, order_id])
     order = get_order(order_id)
 
     if not order:
@@ -72,12 +76,21 @@ def insert(user_id, order_id):
     )
 
     item_id = input("Enter the item id to chose the item: ")
+    log_user_input(item_id)
+
     if not time_def(supermarket.get, [QUERY.item_id == item_id]):
         print("Invalid item id!")
         return False
 
     amount = int(input("How many do you want? "))
+    log_user_input(amount)
+    if amount <= 0:
+        print("Only positive integers are accpeted")
+        return False
+
     user_input_isPublic = input("Is this a public item?(yes/no): ")
+    log_user_input(user_input_isPublic)
+
     if user_input_isPublic == "yes":
         isPublic = True
         time_def(reset_ready, [order_id])
@@ -91,8 +104,13 @@ def insert(user_id, order_id):
                 if item["item_id"] == item_id and item["user_id"] == user_id:
                     input_item = item
                     break
-            input_item["quantity"] += amount
+            new_amount = input_item["quantity"] + amount
+            input_item["quantity"] = new_amount
             order_db.update({"items": items}, QUERY.order_id == order_id)
+            logger.info(
+                f"item {item_id} owned by user {user_id} increased to \
+{new_amount} in order {order_id}"
+            )
         else:
             new_item = {
                 "item_id": item_id,
@@ -103,6 +121,7 @@ def insert(user_id, order_id):
 
             items = order.get("items", [])
             items.append(new_item)
+            logger.info(f"{new_item} added to order {order_id}")
 
         order_db.update({"items": items}, QUERY.order_id == order_id)
 
@@ -113,15 +132,21 @@ def insert(user_id, order_id):
 
 
 def update(user_id, order_id):
+    called_with([user_id, order_id])
     order = get_order(order_id)
 
     if not order:
         return False
 
     items = order.get("items", [])
-    if items == []:
+    table = get_filtered_table(
+        items,
+        lambda item: item["user_id"] == user_id,
+        ["id", "quantity", "isPublic"],
+    )
+    if len(table) == 0:
         print("No item in order list!")
-        return True
+        return False
 
     headers = ["Item ID", "Name", "Price £", "Amount", "Public item"]
     print("Available products: ")
@@ -129,11 +154,7 @@ def update(user_id, order_id):
         print,
         [
             tabulate(
-                get_filtered_table(
-                    items,
-                    lambda item: item["user_id"] == user_id,
-                    ["id", "quantity", "isPublic"],
-                ),
+                table,
                 headers=headers,
                 tablefmt="grid",
             )
@@ -141,6 +162,7 @@ def update(user_id, order_id):
     )
 
     item_id_input = input("Enter the item id you want to modify: ")
+    log_user_input(item_id_input)
     user_input_item = None
 
     # this is used for check if an item exsist in both
@@ -152,6 +174,8 @@ def update(user_id, order_id):
         input_public_or_personal = input(
             "Please state which one you want to modify(public/personal): "
         )
+        log_user_input(input_public_or_personal)
+
         if input_public_or_personal == "public":
             input_isPublic = True
         else:
@@ -179,6 +203,8 @@ def update(user_id, order_id):
 
     print("Please enter following info of the item: ")
     quantity = int(input("How many of this item you want now: "))
+    log_user_input(quantity)
+
     if quantity <= 0:
         items = [
             item
@@ -191,9 +217,14 @@ def update(user_id, order_id):
             order_db.update, [{"items": items}, QUERY.order_id == order_id]
         )
         print("Removed it! ")
+        logger.info(
+            f"item {item_id_input} owned by user {user_id} in order \
+{order_id} is removed"
+        )
         return True
 
     input1 = input("Is this a public item now? (yes/no): ")
+    log_user_input(input1)
 
     if input1 == "yes":
         isPublic = True
@@ -219,11 +250,17 @@ def update(user_id, order_id):
 
     time_def(edit_order)
 
-    print(f"Item {item_id_input} has been updated!")
+    print("Item has been updated!")
+    logger.info(
+        f"item {item_id_input} owned by user {user_id} in order {order_id} \
+now has quantity of {quantity} and is {"public" if isPublic else "personal"}"
+    )
     return True
 
 
 def setReady(user_id, order_id):
+    called_with([user_id, order_id])
+
     user_input = input("Are you ready for placing this order? (yes/no): ")
     if user_input == "yes":
         isReady = True
@@ -247,6 +284,10 @@ def setReady(user_id, order_id):
     time_def(set_ready)
 
     print("Ready for the order!" if isReady else "Ready unset!")
+    logger.info(
+        f"ready state of user {user_id} is set to {isReady} \
+in order {order_id}"
+    )
 
 
 def get_item_detail(id, keys):
@@ -285,6 +326,8 @@ def get_personal_table(items, user_id):
 
 
 def print_order(user_id, order_id):
+    called_with([user_id, order_id])
+
     order = get_order(order_id)
     if not order:
         return False

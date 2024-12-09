@@ -23,3 +23,18 @@ def time_def(func, args=[]):
     else:
         logger.info(msg)
     return res
+
+
+def log_error(msg):
+    print("Unexpected error")
+    stack = inspect.stack()
+    logger.error(f"{stack} unexpected error: {msg}")
+
+
+def called_with(args):
+    stack = inspect.stack()
+    logger.info(f"{stack} called with: {args}")
+
+
+def log_user_input(input):
+    logger.info(f"user entered {input}")
