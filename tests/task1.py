@@ -1,16 +1,13 @@
 import os
 import random
 import pytest
-from tests.utils import check_db
+from tests.utils import mock_dir, check_db
 from hypothesis import given, strategies as st
 from deepdiff import DeepDiff
 
 from tinydb import TinyDB, Query
 
 household_db = TinyDB("databases/household.json")
-
-current_dir = os.path.dirname(__file__)
-mock_dir = f"{current_dir}/databases"
 
 
 @pytest.fixture
@@ -48,10 +45,10 @@ def test_find_order(mock_db):
     find_order = mock_db["find_order"]
 
     @given(st.text())
-    def no_except(id):
+    def invalid_id(id):
         assert not find_order(id)
 
-    no_except()
+    invalid_id()
 
     order_db.insert(
         {"order_id": "1", "users": [{"user_id": "1"}, {"user_id": "2"}]}
@@ -59,7 +56,7 @@ def test_find_order(mock_db):
     assert find_order("1")
     assert not find_order("3")
 
-    no_except()
+    invalid_id()
 
 
 def test_create_new_order(mock_db):
@@ -89,6 +86,7 @@ def test_create_new_order(mock_db):
             "items": [],
             "isReset": False,
         },
+        ignore_order=True,
     )
 
     assert not create_new_order(

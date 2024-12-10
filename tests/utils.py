@@ -2,6 +2,8 @@ import os
 from tinydb import TinyDB, Query
 from cerberus import Validator
 
+mock_dir = f"{os.path.dirname(__file__)}/databases"
+
 
 def get_db(name):
     path = os.path.join(os.path.dirname(__file__), f"../databases/{name}.json")
