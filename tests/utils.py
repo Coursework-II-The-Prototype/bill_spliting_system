@@ -1,5 +1,6 @@
 import os
 from tinydb import TinyDB, Query
+from cerberus import Validator
 
 
 def get_db(name):
@@ -7,23 +8,11 @@ def get_db(name):
     return TinyDB(path)
 
 
-def check_fields(items, keys, msg):
-    for obj in items:
-        _keys = set(keys)
-        __keys = set(obj.keys())
-        assert (
-            _keys == __keys
-        ), f"expect fields of {_keys} but get {__keys} in {msg}"
-
-
-def type_check(var, _type, name):
-    msg = f"expect {name} to be type {_type} but get {type(var)}"
-    if isinstance(_type, list):
-        assert isinstance(var, list) and all(
-            isinstance(el, _type[0]) for el in var
-        ), msg
-    else:
-        assert isinstance(var, _type), msg
+def check_db(db, schema):
+    for i in db.all():
+        assert Validator(
+            schema, require_all=True, allow_unknown=False
+        ).validate(i)
 
 
 def update_db(db, obj, id):
