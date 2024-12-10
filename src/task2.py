@@ -1,6 +1,7 @@
 import os
 from tinydb import TinyDB, Query
 from tabulate import tabulate
+from src.task3 import calc_cost
 
 from src.logger import time_def, log_error, called_with, logger, log_user_input
 
@@ -369,5 +370,9 @@ def print_order(user_id, order_id):
     if len(t1) + len(t2) == 0:
         print("No item in order list!")
         return False
+
+    personal_bill = calc_cost(items, user_id, 4)
+
+    print(f"Your total bill is: {personal_bill}")
 
     return True
