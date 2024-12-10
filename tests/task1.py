@@ -1,14 +1,13 @@
 import os
 import random
 import pytest
-from tests.utils import check_fields, type_check
+from tests.utils import check_db
 from hypothesis import given, strategies as st
+from deepdiff import DeepDiff
 
 from tinydb import TinyDB, Query
 
-QUERY = Query()
-
-all_households = TinyDB("databases/household.json").all()
+household_db = TinyDB("databases/household.json")
 
 current_dir = os.path.dirname(__file__)
 mock_dir = f"{current_dir}/databases"
@@ -18,71 +17,82 @@ mock_dir = f"{current_dir}/databases"
 def mock_db(monkeypatch):
     monkeypatch.setattr(os.path, "dirname", lambda _: mock_dir)
     from utils import get_db
-    from src.task1 import create_new_order
+    from src.task1 import find_order, create_new_order
 
     order_db = get_db("order")
     order_db.truncate()
 
     return {
         "order_db": order_db,
+        "find_order": find_order,
         "create_new_order": create_new_order,
     }
 
 
 def test_household_db():
-    assert isinstance(all_households, list)
-    assert len(all_households) > 0
-    check_fields(
-        all_households, ["user_ids", "household_id"], "household database"
+    assert len(household_db.all()) > 0
+    check_db(
+        household_db,
+        {
+            "household_id": {"type": "string"},
+            "user_ids": {
+                "type": "list",
+                "schema": {"type": "string"},
+            },
+        },
     )
-    for obj in all_households:
-        type_check(
-            obj["household_id"],
-            str,
-            "`household_id`",
-        )
-        type_check(
-            obj["user_ids"],
-            [str],
-            "`user_ids`",
-        )
+
+
+def test_find_order(mock_db):
+    order_db = mock_db["order_db"]
+    find_order = mock_db["find_order"]
+
+    @given(st.text())
+    def no_except(id):
+        assert not find_order(id)
+
+    no_except()
+
+    order_db.insert(
+        {"order_id": "1", "users": [{"user_id": "1"}, {"user_id": "2"}]}
+    )
+    assert find_order("1")
+    assert not find_order("3")
+
+    no_except()
 
 
 def test_create_new_order(mock_db):
     order_db = mock_db["order_db"]
     create_new_order = mock_db["create_new_order"]
+    all_households = household_db.all()
 
     @given(st.text())
-    def non_user(s):
-        assert not create_new_order(s)
+    def invalid_usr(id):
+        assert not create_new_order(
+            id
+        ), "expect order not to be created when user_id is invalid"
 
-    non_user()
+    invalid_usr()
 
     users = random.choice(all_households)["user_ids"]
     user = random.choice(users)
 
-    assert create_new_order(
-        user
-    ), "expect function create_new_order to return True but get False"
+    order_id = create_new_order(user)
+    assert order_id, "expect new order to be created"
 
-    all_orders = order_db.all()
-
-    check_fields(
-        all_orders, ["order_id", "users", "items", "isReset"], "order database"
+    assert DeepDiff(
+        order_db.get(Query().order_id == order_id),
+        {
+            "order_id": order_id,
+            "users": map(lambda id: {"user_id": id, "isReady": False}, users),
+            "items": [],
+            "isReset": False,
+        },
     )
-    for obj in all_orders:
-        type_check(obj["users"], [dict], "`users`")
-        check_fields(obj["users"], ["user_id", "isReady"], "`users`")
-
-    assert set(map(lambda o: o["user_id"], all_orders[0]["users"])) == set(
-        users
-    ), "the `user_ids` and `users` are not matching"
-
-    assert all_orders[0]["isReset"] == False, "expect `isReset` to be False"
-    assert (
-        len(all_orders[0]["items"]) == 0
-    ), "expect `items` to be an empty list"
 
     assert not create_new_order(
         user
-    ), "expect function create_new_order to return False but get True"
+    ), "expect same user to have only 1 concurrent order"
+
+    invalid_usr()
