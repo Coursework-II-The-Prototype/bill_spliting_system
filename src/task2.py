@@ -1,6 +1,7 @@
 import os
 from tinydb import TinyDB, Query
 from tabulate import tabulate
+from src.task3 import calc_cost
 
 from src.logger import time_def, log_error, called_with, logger, log_user_input
 
@@ -9,9 +10,11 @@ supermarket_db_path = os.path.join(
     current_dir, "../databases/supermarket.json"
 )
 order_db_path = os.path.join(current_dir, "../databases/order.json")
+household_db_path = os.path.join(current_dir, "../databases/household.json")
 
 supermarket = TinyDB(supermarket_db_path)
 order_db = TinyDB(order_db_path)
+household = TinyDB(household_db_path)
 QUERY = Query()
 
 
@@ -350,5 +353,12 @@ def print_order(user_id, order_id):
     if len(t1) + len(t2) == 0:
         print("No item in order list!")
         return False
+
+    users = household.search(Query.user_ids.any(user_id))
+    house = users[0]
+    total_users_num = len(house['user_ids'])
+    personal_bill = calc_cost(items, user_id, total_users_num)
+
+    print(f"Your total bill is: {personal_bill}")
 
     return True
