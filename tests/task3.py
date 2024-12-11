@@ -1,9 +1,6 @@
 import os
 import pytest
-from utils import check_fields
-
-current_dir = os.path.dirname(__file__)
-mock_dir = f"{current_dir}/databases"
+from utils import mock_dir, check_db
 
 
 @pytest.fixture
@@ -30,35 +27,50 @@ def test_move_orders(mock_db):
     preparation_db = mock_db["preparation_db"]
     move_orders = mock_db["move_orders"]
 
+    move_orders([])
     move_orders(
         [
             {
                 "order_id": "1",
                 "users": [{"user_id": "user1", "isReady": False}],
-                "items": [],
+                "items": [
+                    {
+                        "item_id": "1",
+                        "quantity": 1,
+                        "isPublic": True,
+                        "user_id": "user1",
+                    }
+                ],
                 "isReset": False,
             },
             {
                 "order_id": "2",
-                "users": [
-                    {"user_id": "user1", "isReady": False},
-                    {"user_id": "user2", "isReady": True},
-                ],
-                "items": [],
-                "isReset": False,
-            },
-            {
-                "order_id": "3",
                 "users": [],
                 "items": [],
                 "isReset": False,
             },
         ]
     )
+    assert len(preparation_db.all()) == 2
 
-    orders = preparation_db.all()
-    assert len(orders) == 3
-    check_fields(orders, ["order_id", "items"], "preparation database")
+    check_db(
+        preparation_db,
+        {
+            "order_id": {"type": "string"},
+            "items": {
+                "type": "list",
+                "schema": {
+                    "type": "dict",
+                    "schema": {
+                        "item_id": {"type": "string"},
+                        "quantity": {"type": "integer"},
+                        "isPublic": {"type": "boolean"},
+                        "user_id": {"type": "string"},
+                    },
+                },
+            },
+        },
+    )
 
 
 def test_calc_cost(mock_db):
@@ -114,6 +126,14 @@ def test_daily_job(mock_db):
         for o in order_db.all():
             assert o["isReset"] == False
 
+    def moved():
+        assert len(order_db.all()) == 0
+        assert len(preparation_db.all()) == 1
+
+    def not_moved():
+        assert len(order_db.all()) == 1
+        assert len(preparation_db.all()) == 0
+
     repeat(
         [
             {
@@ -131,10 +151,6 @@ def test_daily_job(mock_db):
         ],
         allReset,
     )
-
-    def not_moved():
-        assert len(order_db.all()) == 1
-        assert len(preparation_db.all()) == 0
 
     repeat(
         [
@@ -163,10 +179,6 @@ def test_daily_job(mock_db):
         ],
         not_moved,
     )
-
-    def moved():
-        assert len(order_db.all()) == 0
-        assert len(preparation_db.all()) == 1
 
     repeat(
         [

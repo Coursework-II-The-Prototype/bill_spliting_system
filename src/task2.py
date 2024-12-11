@@ -1,6 +1,7 @@
 import os
 from tinydb import TinyDB, Query
 from tabulate import tabulate
+from src.task1 import find_household
 from src.task3 import calc_cost
 
 from src.logger import time_def, log_error, called_with, logger, log_user_input
@@ -85,9 +86,15 @@ def insert(user_id, order_id):
         print("Invalid item id!")
         return False
 
-    amount = int(input("How many do you want? "))
-    log_user_input(amount)
-    if amount <= 0:
+    quantity = input("How many do you want? ")
+    log_user_input(quantity)
+    try:
+        quantity = int(quantity)
+    except:
+        print("Invalid quantity")
+        return False
+
+    if quantity <= 0:
         print("Only positive integers are accpeted")
         return False
 
@@ -107,7 +114,7 @@ def insert(user_id, order_id):
                 if item["item_id"] == item_id and item["user_id"] == user_id:
                     input_item = item
                     break
-            new_amount = input_item["quantity"] + amount
+            new_amount = input_item["quantity"] + quantity
             input_item["quantity"] = new_amount
             order_db.update({"items": items}, QUERY.order_id == order_id)
             logger.info(
@@ -117,7 +124,7 @@ def insert(user_id, order_id):
         else:
             new_item = {
                 "item_id": item_id,
-                "quantity": amount,
+                "quantity": quantity,
                 "isPublic": isPublic,
                 "user_id": user_id,
             }
@@ -170,6 +177,7 @@ def update(user_id, order_id):
 
     # this is used for check if an item exsist in both
     # personal list and public order list
+    input_isPublic = None
     if isExisted(order_id, user_id, item_id_input, True) and isExisted(
         order_id, user_id, item_id_input, False
     ):
@@ -205,15 +213,26 @@ def update(user_id, order_id):
         return False
 
     print("Please enter following info of the item: ")
-    quantity = int(input("How many of this item you want now: "))
+    quantity = input("How many of this item you want now: ")
     log_user_input(quantity)
+    try:
+        quantity = int(quantity)
+    except:
+        print("Invalid quantity")
+        return False
 
     if quantity <= 0:
         items = [
             item
             for item in items
             if not (
-                item["item_id"] == item_id_input and item["user_id"] == user_id
+                item["item_id"] == item_id_input
+                and item["user_id"] == user_id
+                and (
+                    item["isPublic"] == input_isPublic
+                    if input_isPublic is not None
+                    else True
+                )
             )
         ]
         time_def(
@@ -291,6 +310,7 @@ def setReady(user_id, order_id):
         f"ready state of user {user_id} is set to {isReady} \
 in order {order_id}"
     )
+    return True
 
 
 def get_item_detail(id, keys):
@@ -328,6 +348,12 @@ def get_personal_table(items, user_id):
     )
 
 
+def calc_bill(user_id, items):
+    house = find_household(user_id)
+    total_users_num = len(house["user_ids"])
+    return calc_cost(items, user_id, total_users_num)
+
+
 def print_order(user_id, order_id):
     called_with([user_id, order_id])
 
@@ -354,11 +380,6 @@ def print_order(user_id, order_id):
         print("No item in order list!")
         return False
 
-    users = household.search(Query.user_ids.any(user_id))
-    house = users[0]
-    total_users_num = len(house['user_ids'])
-    personal_bill = calc_cost(items, user_id, total_users_num)
-
-    print(f"Your total bill is: {personal_bill}")
+    print(f"Your total bill is: {calc_bill(user_id, items)}")
 
     return True
