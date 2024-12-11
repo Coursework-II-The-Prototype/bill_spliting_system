@@ -82,9 +82,15 @@ def insert(user_id, order_id):
         print("Invalid item id!")
         return False
 
-    amount = int(input("How many do you want? "))
-    log_user_input(amount)
-    if amount <= 0:
+    quantity = input("How many do you want? ")
+    log_user_input(quantity)
+    try:
+        quantity = int(quantity)
+    except:
+        print("Invalid quantity")
+        return False
+
+    if quantity <= 0:
         print("Only positive integers are accpeted")
         return False
 
@@ -104,7 +110,7 @@ def insert(user_id, order_id):
                 if item["item_id"] == item_id and item["user_id"] == user_id:
                     input_item = item
                     break
-            new_amount = input_item["quantity"] + amount
+            new_amount = input_item["quantity"] + quantity
             input_item["quantity"] = new_amount
             order_db.update({"items": items}, QUERY.order_id == order_id)
             logger.info(
@@ -114,7 +120,7 @@ def insert(user_id, order_id):
         else:
             new_item = {
                 "item_id": item_id,
-                "quantity": amount,
+                "quantity": quantity,
                 "isPublic": isPublic,
                 "user_id": user_id,
             }
@@ -167,6 +173,7 @@ def update(user_id, order_id):
 
     # this is used for check if an item exsist in both
     # personal list and public order list
+    input_isPublic = None
     if isExisted(order_id, user_id, item_id_input, True) and isExisted(
         order_id, user_id, item_id_input, False
     ):
@@ -202,15 +209,26 @@ def update(user_id, order_id):
         return False
 
     print("Please enter following info of the item: ")
-    quantity = int(input("How many of this item you want now: "))
+    quantity = input("How many of this item you want now: ")
     log_user_input(quantity)
+    try:
+        quantity = int(quantity)
+    except:
+        print("Invalid quantity")
+        return False
 
     if quantity <= 0:
         items = [
             item
             for item in items
             if not (
-                item["item_id"] == item_id_input and item["user_id"] == user_id
+                item["item_id"] == item_id_input
+                and item["user_id"] == user_id
+                and (
+                    item["isPublic"] == input_isPublic
+                    if input_isPublic is not None
+                    else True
+                )
             )
         ]
         time_def(
@@ -288,6 +306,7 @@ def setReady(user_id, order_id):
         f"ready state of user {user_id} is set to {isReady} \
 in order {order_id}"
     )
+    return True
 
 
 def get_item_detail(id, keys):

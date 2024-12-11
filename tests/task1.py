@@ -51,10 +51,13 @@ def test_find_order(mock_db):
     invalid_id()
 
     order_db.insert(
-        {"order_id": "1", "users": [{"user_id": "1"}, {"user_id": "2"}]}
+        {
+            "order_id": "1",
+            "users": [{"user_id": "user1"}, {"user_id": "user2"}],
+        }
     )
-    assert find_order("1")
-    assert not find_order("3")
+    assert find_order("user1")
+    assert not find_order("no_user")
 
     invalid_id()
 
@@ -78,15 +81,20 @@ def test_create_new_order(mock_db):
     order_id = create_new_order(user)
     assert order_id, "expect new order to be created"
 
-    assert DeepDiff(
-        order_db.get(Query().order_id == order_id),
-        {
-            "order_id": order_id,
-            "users": map(lambda id: {"user_id": id, "isReady": False}, users),
-            "items": [],
-            "isReset": False,
-        },
-        ignore_order=True,
+    assert (
+        DeepDiff(
+            dict(order_db.get(Query().order_id == order_id)),
+            {
+                "order_id": order_id,
+                "users": list(
+                    map(lambda id: {"user_id": id, "isReady": False}, users)
+                ),
+                "items": [],
+                "isReset": False,
+            },
+            ignore_order=True,
+        )
+        == {}
     )
 
     assert not create_new_order(
