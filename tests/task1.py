@@ -14,7 +14,7 @@ household_db = TinyDB("databases/household.json")
 def mock_db(monkeypatch):
     monkeypatch.setattr(os.path, "dirname", lambda _: mock_dir)
     from utils import get_db
-    from src.task1 import find_order, create_new_order
+    from src.task1 import find_order, find_household, create_new_order
 
     order_db = get_db("order")
     order_db.truncate()
@@ -22,6 +22,7 @@ def mock_db(monkeypatch):
     return {
         "order_db": order_db,
         "find_order": find_order,
+        "find_household": find_household,
         "create_new_order": create_new_order,
     }
 
@@ -38,6 +39,20 @@ def test_household_db():
             },
         },
     )
+
+
+def test_find_household(mock_db):
+    find_household = mock_db["find_household"]
+
+    @given(st.text())
+    def invalid_id(id):
+        assert not find_household(id)
+
+    invalid_id()
+
+    assert find_household("user1")
+
+    invalid_id()
 
 
 def test_find_order(mock_db):

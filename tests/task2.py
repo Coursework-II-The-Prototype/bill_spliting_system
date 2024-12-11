@@ -21,6 +21,7 @@ def mock_db(monkeypatch):
         get_personal_table,
         get_public_table,
         print_order,
+        calc_bill,
         insert,
         update,
         reset_ready,
@@ -38,6 +39,7 @@ def mock_db(monkeypatch):
         "get_personal_table": get_personal_table,
         "get_public_table": get_public_table,
         "print_order": print_order,
+        "calc_bill": calc_bill,
         "insert": insert,
         "update": update,
         "reset_ready": reset_ready,
@@ -166,6 +168,35 @@ def test_print_order(mock_db):
     assert print_order("user1", "1")
 
 
+def test_calc_bill(mock_db):
+    order_db = mock_db["order_db"]
+    calc_bill = mock_db["calc_bill"]
+
+    order_db.insert(
+        {
+            "order_id": "1",
+            "users": [],
+            "items": [
+                {
+                    "item_id": "1",
+                    "quantity": 1,
+                    "isPublic": False,
+                    "user_id": "user1",
+                },
+                {
+                    "item_id": "2",
+                    "quantity": 1,
+                    "isPublic": True,
+                    "user_id": "user2",
+                },
+            ],
+            "isReset": False,
+        }
+    )
+
+    assert calc_bill("user1", order_db.all()[0]["items"]) == 17.5
+
+
 def test_insert(mock_db):
     order_db = mock_db["order_db"]
     supermarket_db = mock_db["supermarket_db"]
@@ -229,14 +260,29 @@ def test_insert(mock_db):
     with patch("builtins.input", side_effect=["1", "2", "yes"]):
         assert insert("user1", "1")
 
-    assert len(order_db.all()[0]["items"]) == 2
-    assert order_db.all()[0]["items"][1]["quantity"] == 2
-
     with patch("builtins.input", side_effect=["1", "2", "no"]):
         assert insert("user1", "1")
 
-    assert len(order_db.all()[0]["items"]) == 2
-    assert order_db.all()[0]["items"][0]["quantity"] == 3
+    assert (
+        DeepDiff(
+            list(order_db.all()[0]["items"]),
+            [
+                {
+                    "item_id": "1",
+                    "quantity": 3,
+                    "isPublic": False,
+                    "user_id": "user1",
+                },
+                {
+                    "item_id": "1",
+                    "quantity": 2,
+                    "isPublic": True,
+                    "user_id": "user1",
+                },
+            ],
+        )
+        == {}
+    )
 
     @given(st.text(), st.characters(), st.text())
     def rand_inp(s1, s2, s3):
@@ -600,19 +646,46 @@ def test_setReady(mock_db):
     with patch("builtins.input", side_effect=["no"]):
         setReady("user1", "1")
 
-    assert order_db.all()[0]["users"][0]["isReady"] == False
+    assert (
+        DeepDiff(
+            list(order_db.all()[0]["users"]),
+            [
+                {"user_id": "user1", "isReady": False},
+                {"user_id": "user2", "isReady": False},
+            ],
+        )
+        == {}
+    )
 
     with patch("builtins.input", side_effect=["yes"]):
         setReady("user1", "1")
 
-    assert order_db.all()[0]["users"][0]["isReady"] == True
-    assert order_db.all()[0]["users"][1]["isReady"] == False
+    assert (
+        DeepDiff(
+            list(order_db.all()[0]["users"]),
+            [
+                {"user_id": "user1", "isReady": True},
+                {"user_id": "user2", "isReady": False},
+            ],
+        )
+        == {}
+    )
 
     with patch("builtins.input", side_effect=["no"]):
         setReady("user1", "1")
+    with patch("builtins.input", side_effect=["yes"]):
+        setReady("user2", "1")
 
-    assert order_db.all()[0]["users"][0]["isReady"] == False
-    assert order_db.all()[0]["users"][1]["isReady"] == False
+    assert (
+        DeepDiff(
+            list(order_db.all()[0]["users"]),
+            [
+                {"user_id": "user1", "isReady": False},
+                {"user_id": "user2", "isReady": True},
+            ],
+        )
+        == {}
+    )
 
     @given(st.text())
     def rand_inp(s):

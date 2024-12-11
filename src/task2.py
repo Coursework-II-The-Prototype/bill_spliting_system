@@ -1,6 +1,7 @@
 import os
 from tinydb import TinyDB, Query
 from tabulate import tabulate
+from src.task1 import find_household
 from src.task3 import calc_cost
 
 from src.logger import time_def, log_error, called_with, logger, log_user_input
@@ -347,6 +348,12 @@ def get_personal_table(items, user_id):
     )
 
 
+def calc_bill(user_id, items):
+    house = find_household(user_id)
+    total_users_num = len(house["user_ids"])
+    return calc_cost(items, user_id, total_users_num)
+
+
 def print_order(user_id, order_id):
     called_with([user_id, order_id])
 
@@ -373,11 +380,6 @@ def print_order(user_id, order_id):
         print("No item in order list!")
         return False
 
-    users = household.search(Query.user_ids.any(user_id))
-    house = users[0]
-    total_users_num = len(house['user_ids'])
-    personal_bill = calc_cost(items, user_id, total_users_num)
-
-    print(f"Your total bill is: {personal_bill}")
+    print(f"Your total bill is: {calc_bill(user_id, items)}")
 
     return True
